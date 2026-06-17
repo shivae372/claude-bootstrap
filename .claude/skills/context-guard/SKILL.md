@@ -2,7 +2,6 @@
 name: context-guard
 description: "Context window protection. Auto-activates when the conversation is getting long, when the user is about to do a large file read or exploration task, or when the context is approaching its limit. Helps route expensive operations to sub-agents to protect the main session."
 allowed-tools: Bash
-version: 1.0.0
 ---
 
 ## Purpose
