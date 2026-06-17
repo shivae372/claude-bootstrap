@@ -8,8 +8,27 @@
   "license": "Apache-2.0",
   "keywords": ["self-healing", "self-learning", "skills", "mcp", "agent-skills", "automation"],
   "skills": "./.claude/skills",
-  "agents": "./.claude/agents",
-  "commands": "./.claude/commands",
+  "agents": [
+    "./.claude/agents/explorer.md",
+    "./.claude/agents/code-reviewer.md",
+    "./.claude/agents/test-runner.md",
+    "./.claude/agents/security-scanner.md",
+    "./.claude/agents/dep-checker.md",
+    "./.claude/agents/doc-writer.md"
+  ],
+  "commands": [
+    "./.claude/commands/bootstrap.md",
+    "./.claude/commands/plan.md",
+    "./.claude/commands/test.md",
+    "./.claude/commands/review.md",
+    "./.claude/commands/security.md",
+    "./.claude/commands/deps.md",
+    "./.claude/commands/ship.md",
+    "./.claude/commands/checkpoint.md",
+    "./.claude/commands/tips.md",
+    "./.claude/commands/update.md",
+    "./.claude/commands/onboard.md"
+  ],
   "hooks": "./.claude/hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }
