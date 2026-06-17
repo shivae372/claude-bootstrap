@@ -152,7 +152,7 @@ def diagnose(root="."):
                 "Re-run `/nodo` to refresh .nodo/nodo-context.*; run `nodo … --self-check` for nodo's own diagnosis.")
     elif ns["has_code"]:
         add("info", "nodo", "No codebase map. The nodo sibling gives Claude an architecture map + blast-radius answers.",
-            "Install it: `/plugin marketplace add shivae372/claude-bootstrap` → `/plugin install nodo`, or clone shivae372/nodo.")
+            "Install it: run /marketplace and enter shivae372/claude-bootstrap, then /plugin install nodo@claude-bootstrap (or clone shivae372/nodo).")
 
     return _finalize(findings, auto, root)
 
