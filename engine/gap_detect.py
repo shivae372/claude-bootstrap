@@ -149,8 +149,8 @@ def main():
                          "these precisely. Run `/nodo` (or read .nodo/nodo-context.json) before grepping.")
         else:
             notes.append("This is an architecture/blast-radius question. The `nodo` sibling answers these "
-                         "deterministically. Install it: `/plugin marketplace add shivae372/claude-bootstrap` "
-                         "→ `/plugin install nodo` (or clone shivae372/nodo), then `/nodo`.")
+                         "deterministically. Install it: run /marketplace and enter shivae372/claude-bootstrap, then "
+                         "/plugin install nodo@claude-bootstrap (or clone shivae372/nodo), then /nodo.")
 
     if failure_nudge(root) and not _already_nudged(root, "__heal__"):
         notes.append("Several tool calls have failed recently. Consider running the "
