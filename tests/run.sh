@@ -132,11 +132,48 @@ python3 engine/skill_forge.py validate "$FROOT/.claude/skills/demo-skill/SKILL.m
 GROOT="$(mktemp -d)"; mkdir -p "$GROOT/.claude"
 echo "{\"prompt\":\"add stripe checkout\",\"cwd\":\"$GROOT\"}" | python3 engine/gap_detect.py | grep -q "augment" && ok "gap_detect: nudges on capability gap" || no "gap_detect: nudges on gap"
 echo "{\"prompt\":\"fix a typo\",\"cwd\":\"$GROOT\"}" | python3 engine/gap_detect.py | grep -q . && no "gap_detect: should be silent on benign" || ok "gap_detect: silent on benign prompt"
-# MCP server: handshake + tools
+# sources: self-extending discovery — teach, reject junk, surface in ranking
+SROOT="$(mktemp -d)"
+echo '{"kind":"hint","name":"fly","text":"Fly.io deploy skills live at superfly/"}' | python3 engine/learn.py source-add --root "$SROOT" >/dev/null 2>&1 && ok "sources: learns a valid source" || no "sources: learns a source"
+echo '{"kind":"http_json","name":"x","url":"https://api.x/s","name_field":"n"}' | python3 engine/learn.py source-add --root "$SROOT" >/dev/null 2>&1 && no "sources: should reject url without {query}" || ok "sources: rejects invalid source"
+python3 engine/skill_finder.py "fly.io deploy" --root "$SROOT" --json 2>/dev/null | grep -q '"learned:fly"' && ok "sources: learned source surfaces in discovery" || no "sources: learned source surfaces"
+# MCP server: handshake + tools (incl. learn_source)
 MCPOUT="$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | python3 mcp/forge_server.py 2>/dev/null)"
 echo "$MCPOUT" | grep -q '"serverInfo"' && ok "mcp: initialize responds" || no "mcp: initialize"
 echo "$MCPOUT" | grep -q 'discover_skill' && ok "mcp: lists tools" || no "mcp: lists tools"
-rm -rf "$EROOT" "$LROOT" "$FROOT" "$GROOT" 2>/dev/null || true
+echo "$MCPOUT" | grep -q 'learn_source' && ok "mcp: exposes learn_source tool" || no "mcp: exposes learn_source"
+rm -rf "$EROOT" "$LROOT" "$FROOT" "$GROOT" "$SROOT" 2>/dev/null || true
+
+# ─── 9. Everything in sync (the consistency guard) ───────────────────────────
+section "9. In-sync / consistency"
+# 9a. No skill ships the non-standard `version:` frontmatter key (spec compliance).
+if grep -rl '^version:' .claude/skills/*/SKILL.md 2>/dev/null | grep -q .; then no "skills: no non-standard 'version:' key"; else ok "skills: spec-compliant frontmatter (no 'version:')"; fi
+# 9b. Plugin hooks.json has the required outer "hooks" wrapper.
+python3 -c "import json,sys; sys.exit(0 if 'hooks' in json.load(open('.claude/hooks/hooks.json')) else 1)" 2>/dev/null && ok "plugin hooks.json has outer 'hooks' wrapper" || no "plugin hooks.json wrapper"
+# 9c. Every skill install.sh advertises actually exists in the repo.
+SYNC_MISS=0
+for s in $(grep -oE 'DEV_SKILLS=\([^)]*\)' install.sh | tr -d '()' | cut -d= -f2); do
+  [ -f ".claude/skills/$s/SKILL.md" ] || { echo "    missing skill: $s"; SYNC_MISS=1; }
+done
+[ "$SYNC_MISS" -eq 0 ] && ok "install.sh DEV_SKILLS all exist on disk" || no "install.sh lists a missing skill"
+# 9d. Every command install.sh advertises exists.
+CMD_MISS=0
+for c in $(grep -oE 'DEV_COMMANDS=\([^)]*\)' install.sh | tr -d '()' | cut -d= -f2); do
+  [ -f ".claude/commands/$c.md" ] || { echo "    missing command: $c"; CMD_MISS=1; }
+done
+[ "$CMD_MISS" -eq 0 ] && ok "install.sh DEV_COMMANDS all exist on disk" || no "install.sh lists a missing command"
+# 9e. Every hook referenced in settings.json exists and is executable.
+HK_MISS=0
+for h in $(python3 -c "import json,re; d=json.load(open('.claude/settings.json')); [print(re.search(r'hooks/([\w.-]+)',x['command']).group(1)) for ev in d['hooks'].values() for g in ev for x in g['hooks'] if 'hooks/' in x['command']]" 2>/dev/null); do
+  [ -x ".claude/hooks/$h" ] || { echo "    missing/!x hook: $h"; HK_MISS=1; }
+done
+[ "$HK_MISS" -eq 0 ] && ok "settings.json hooks all present + executable" || no "settings.json references a missing hook"
+# 9f. Engine scripts referenced by skills/hooks exist.
+ENG_OK=1
+for e in skill_finder doctor learn skill_forge gap_detect sources; do
+  [ -f "engine/$e.py" ] || { echo "    missing engine: $e"; ENG_OK=0; }
+done
+[ "$ENG_OK" -eq 1 ] && ok "all engine scripts present" || no "an engine script is missing"
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
 printf '\n\033[1m─────────────────────────────\033[0m\n'
