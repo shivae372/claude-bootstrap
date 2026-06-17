@@ -2,7 +2,6 @@
 name: test-runner
 description: Run the project's test suite and get a structured report. Invoke when you want to run tests after making changes. Auto-activates when user says "run tests", "do tests pass", or "check if this broke anything". Routes execution to the test-runner sub-agent to keep main context clean.
 allowed-tools: Bash
-version: 1.0.0
 ---
 
 ## Purpose
