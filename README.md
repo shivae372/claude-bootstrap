@@ -15,12 +15,13 @@ skill, or **forges a new one** — mid-task. It heals its own config and remembe
 **A · As a Claude Code plugin (recommended).** Type these inside Claude Code:
 
 ```text
-/plugin marketplace add shivae372/claude-bootstrap
+/marketplace
+#  ↳ when prompted "Enter marketplace source:", type:  shivae372/claude-bootstrap
 /plugin install claude-bootstrap@claude-bootstrap
-/plugin install nodo@claude-bootstrap          # optional: the codebase-map sibling
+/plugin install nodo@claude-bootstrap          # the codebase-map sibling
 ```
 
-> **Don't see `/plugin` (or get a "path does not exist" error)?** Your Claude Code is out of date —
+> **Don't see `/marketplace` (or get a "path does not exist" error)?** Your Claude Code is out of date —
 > run **`claude update`** (or reinstall the latest), then retry. The `/plugin` command ships in recent versions.
 
 **B · One-line installer (works on _any_ Claude Code version, no `/plugin` needed).** From your project folder:
@@ -185,7 +186,9 @@ offers to install nodo the moment you ask an architecture or blast-radius questi
 ships both. See [docs/ECOSYSTEM.md](docs/ECOSYSTEM.md).
 
 ```bash
-/plugin marketplace add shivae372/claude-bootstrap   # offers BOTH claude-bootstrap and nodo
+/marketplace          # when asked, enter:  shivae372/claude-bootstrap   (offers BOTH plugins)
+/plugin install claude-bootstrap@claude-bootstrap
+/plugin install nodo@claude-bootstrap
 ```
 
 ## Contributing
