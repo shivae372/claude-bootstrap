@@ -9,7 +9,7 @@ You're on the **hybrid** tier — Claude is configured to work with you collabor
 ## Key Commands (Claude knows these automatically)
 - Run tests: `{{TEST_CMD}}`
 - Start dev server: `{{DEV_CMD}}`
-- Deploy: `{{DEPLOY_CMD}}`
+- Build: `{{BUILD_CMD}}`
 
 ## How to Work With Claude
 
@@ -28,8 +28,9 @@ Ask Claude: "What's blocking us?" or "Walk me through what you just did."
 - Change database schemas
 - Install new dependencies
 
-## Skills Available
-- `/plan` — Break down your goal into steps
+## Commands Available
+- `/plan` — Break your goal into steps
 - `/review` — Check recent changes for issues
-- `/deploy` — Deploy when you're ready
-- `/status` — Show what's been done this session
+- `/test` — Run the tests
+- `/ship` — Final checks, then a clean commit when you're ready
+- `/checkpoint` — Save where we are this session
