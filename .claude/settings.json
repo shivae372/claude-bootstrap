@@ -1,33 +1,33 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/session-start.sh" }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/safety-check.sh"
-          }
+          { "type": "command", "command": "bash .claude/hooks/safety-check.sh" }
         ]
       },
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/secret-detector.sh"
-          }
+          { "type": "command", "command": "bash .claude/hooks/secret-detector.sh" }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|str_replace_based_edit_tool|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/format.sh"
-          }
+          { "type": "command", "command": "bash .claude/hooks/format.sh" }
         ]
       }
     ],
@@ -35,10 +35,7 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/checkpoint.sh"
-          }
+          { "type": "command", "command": "bash .claude/hooks/checkpoint.sh" }
         ]
       }
     ],
@@ -46,10 +43,7 @@
       {
         "matcher": "",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/notify.sh"
-          }
+          { "type": "command", "command": "bash .claude/hooks/notify.sh" }
         ]
       }
     ]
