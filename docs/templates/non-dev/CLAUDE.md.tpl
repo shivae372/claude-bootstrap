@@ -32,7 +32,8 @@ Say "that's not what I meant" and describe what you expected. Claude will adjust
 - Making changes visible to others
 - Spending money or using paid services
 
-## Your Skills
-- `/help` — Get guidance on what to ask Claude
-- `/status` — See what Claude has done this session
-- `/undo` — Ask Claude to reverse the last change
+## Your Commands
+- `/onboard` — Set up Claude for how you work (quick first-run questions)
+- `/plan` — Have Claude lay out the steps before it does anything
+- `/tips` — Get a few pointers for working with Claude
+- `/checkpoint` — Save a summary of what we've done so you can pick up later
