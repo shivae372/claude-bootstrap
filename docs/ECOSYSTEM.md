@@ -24,7 +24,7 @@ diagnose all of it when something breaks.
 |---|---|
 | nodo → bootstrap | `session-start.sh` injects `.nodo/nodo-context.md` as session context — Claude starts every session with the architecture map **next to** the capability manifest and learnings. |
 | bootstrap → nodo | `doctor.py` reports nodo's status (installed? map present? stale?) so nodo is **transparent** to Claude. The real-time gap hook routes architecture/blast-radius questions ("what calls X", "what breaks if I change Y") to nodo, and offers to install it if absent. |
-| shared | One marketplace (`/plugin marketplace add shivae372/claude-bootstrap`) offers **both** plugins. |
+| shared | One marketplace (`/marketplace` → enter `shivae372/claude-bootstrap`) offers **both** plugins. |
 
 ## Division of labour (both follow the same philosophy)
 
@@ -46,7 +46,8 @@ python  nodo.py . --self-check              # nodo's own blind-spot report (then
 ## Get both
 
 ```bash
-/plugin marketplace add shivae372/claude-bootstrap
+/marketplace
+#  ↳ when prompted, enter:  shivae372/claude-bootstrap
 /plugin install claude-bootstrap@claude-bootstrap
 /plugin install nodo@claude-bootstrap
 ```
