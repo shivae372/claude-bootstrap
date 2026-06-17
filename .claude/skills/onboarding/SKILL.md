@@ -2,7 +2,6 @@
 name: onboarding
 description: "First-run user onboarding. Asks 6 quick questions, detects the project, writes USER_PROFILE.json, and recommends the right setup tier. Auto-activates on first use or when the user says 'set me up', 'I'm new', or runs /onboard."
 allowed-tools: Read, Write, Bash
-version: 1.0.0
 ---
 
 ## Purpose
