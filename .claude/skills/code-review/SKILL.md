@@ -2,7 +2,6 @@
 name: code-review
 description: Structured code review. Invoke before committing, before opening a PR, or when you want feedback on changes. Auto-activates on "review this code", "check my changes", "look for issues", "review before I push". Routes to code-reviewer sub-agent to keep main context clean.
 allowed-tools: Bash, Read
-version: 1.0.0
 ---
 
 ## Purpose

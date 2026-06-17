@@ -29,9 +29,13 @@ persists and applies deterministically — offline, zero-dependency, validated b
 - **Real-time hooks**: `user-prompt-submit.sh` (notices a capability gap mid-task and nudges
   Claude to `augment` then and there), `capture-failure.sh` (logs tool failures → heal nudge),
   and an upgraded `session-start.sh` (injects SESSION_STATE + capability manifest + learnings).
+- **Self-extending discovery** (`engine/sources.py`) — when the web search misses something but
+  Claude finds it another way (a specific GitHub org, a vendor JSON endpoint, or a hint), it
+  teaches the finder via `learn.py source-add`; every future `discover` queries that source TOO,
+  alongside the web. Discovery heals and compounds. Sources are validated before they're stored.
 - **MCP server** `mcp/forge_server.py` (stdio JSON-RPC, pure stdlib) exposing `discover_skill`,
-  `capability_audit`, `heal_report`, `record_learning` — so Claude can augment/heal the setup
-  live, mid-session. Registered via `.mcp.json`.
+  `capability_audit`, `heal_report`, `record_learning`, and `learn_source` — so Claude can augment,
+  heal, and *extend* the setup live, mid-session. Registered via `.mcp.json`.
 - **Plugin packaging** (`.claude-plugin/plugin.json` + `marketplace.json` + `hooks.json`) so the
   whole thing installs via `/plugin marketplace add shivae372/claude-bootstrap` (experimental;
   the installer remains the validated path).
@@ -39,7 +43,15 @@ persists and applies deterministically — offline, zero-dependency, validated b
 ### Changed
 - `install.sh` (now v1.1.0) deploys the engine + MCP server into every project and registers the
   new skills/hooks across all tiers.
-- Test suite grown to **64 checks** covering the engine, hooks, MCP handshake, and install e2e.
+- Test suite grown to **74 checks** covering the engine, learned sources, hooks, MCP handshake,
+  install e2e, and a consistency guard (install lists ↔ files ↔ settings all stay in sync).
+
+### Spec compliance (matches official Claude Code formats)
+- Removed the non-standard `version:` key from every `SKILL.md` (it is not a recognized skill
+  frontmatter field per the official spec — it was silently ignored) and from the forge scaffolder,
+  so every generated skill is spec-correct. `allowed-tools` / `argument-hint` verified correct.
+- Fixed the plugin `hooks/hooks.json` to use the required outer `"hooks"` wrapper, and plugin hook
+  commands use `${CLAUDE_PLUGIN_ROOT}`.
 
 ### Known limitations (honest)
 - MCP servers can't be hot-registered into a *running* session — `.mcp.json`/`claude mcp add`

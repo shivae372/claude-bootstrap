@@ -2,7 +2,6 @@
 name: tips
 description: "Surfaces a few high-leverage, context-aware tips for getting more out of Claude Code. Self-contained (no external data file). Invoked by /tips, by analyze-repo at the end of a scan, or when the user asks how to use Claude better."
 allowed-tools: Read
-version: 1.0.0
 ---
 
 ## Purpose

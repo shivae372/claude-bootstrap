@@ -2,7 +2,6 @@
 name: self-update
 description: "Checks whether the project's claude-bootstrap setup is current and applies updates safely. Compares the installed version against the source repo, shows what changed, and updates only what the user approves. Triggered by /update."
 allowed-tools: Bash, Read, Edit
-version: 1.0.0
 ---
 
 ## Purpose

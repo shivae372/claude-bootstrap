@@ -176,7 +176,7 @@ def from_smithery(query):
     return out
 
 
-def discover(query, limit=10):
+def discover(query, limit=10, root="."):
     keywords = _kw(query)
     cands, errors = [], {}
     for fn in (from_anthropic_skills, from_github_repos, from_mcp_registry, from_smithery):
@@ -190,6 +190,12 @@ def discover(query, limit=10):
             cands.extend(res)
         except Exception as e:
             errors[fn.__name__] = str(e)
+    # Learned sources — resources Claude taught the finder when the web fell short.
+    try:
+        import sources as _sources
+        cands.extend(_sources.query(root, query, keywords))
+    except Exception as e:
+        errors["learned_sources"] = str(e)
     # Dedupe by (source, name).
     seen, deduped = set(), []
     for c in cands:
@@ -209,9 +215,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("query")
     ap.add_argument("--limit", type=int, default=10)
+    ap.add_argument("--root", default=".")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
-    res = discover(args.query, args.limit)
+    res = discover(args.query, args.limit, args.root)
     if args.json:
         print(json.dumps(res, indent=2))
         return

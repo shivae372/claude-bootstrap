@@ -2,7 +2,6 @@
 name: augment
 description: "Gives this project a NEW capability on demand. Use the moment the user needs something the current setup can't do well — a new framework, a service integration (Stripe, Postgres, Twilio…), a deploy target, a niche workflow. Searches the open ecosystem for a fitting skill/MCP across platforms, installs the best vetted one, and if nothing fits, forges a bespoke skill. Triggers: 'can you also…', 'I need to…', 'set up…', 'integrate…', 'how do I … here', or any task with no matching installed skill."
 allowed-tools: Bash, Read, Write, Edit, WebFetch
-version: 1.0.0
 ---
 
 ## Purpose
@@ -48,6 +47,20 @@ let them pick when it's a close call.
 ### 4b. Nothing fits → forge it
 Invoke the **forge** skill to author a detailed, project-specific skill. Do NOT settle
 for a generic one — a vague skill is worse than none.
+
+### 4c. Found it another way? Teach the finder (self-extending discovery)
+If the web search missed it but you located the capability another way — a specific GitHub
+org, a vendor's own JSON search endpoint, or simply "X lives at Y" — record that source so
+the engine searches it next time TOO, alongside the web. Discovery then heals and compounds:
+```bash
+# a whole org that publishes the skills you needed:
+echo '{"kind":"github_org","org":"<org>","note":"has <capability> skills/servers"}' \
+  | python3 .claude/engine/learn.py source-add
+# or a queryable JSON endpoint, or a durable hint:
+# {"kind":"http_json","name":"acme","url":"https://api.acme/s?q={query}","name_field":"slug","url_field":"link"}
+# {"kind":"hint","name":"...","text":"For <X>, check <Y>"}
+```
+The next discovery run includes it automatically.
 
 ### 5. Make it real now, then learn
 - Verify the new capability works (run it once if safe).

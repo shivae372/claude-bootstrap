@@ -2,7 +2,6 @@
 name: doctor
 description: "Self-heals this project's Claude Code setup. Diagnoses broken or missing pieces — skills with no SKILL.md, hooks referenced but absent or non-executable, invalid settings.json, bloated CLAUDE.md — scores health, and applies safe fixes. Use when something in the setup seems off, after edits to .claude/, when a hook or skill isn't firing, or on a `[heal]` nudge. Triggers: 'is my setup ok', 'fix my claude setup', 'why isn't my skill/hook working', '/doctor'."
 allowed-tools: Bash, Read, Edit, Write
-version: 1.0.0
 ---
 
 ## Purpose

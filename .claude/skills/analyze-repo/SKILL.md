@@ -2,7 +2,6 @@
 name: analyze-repo
 description: Full repository analysis. Invoke at the start of a new session or when Claude needs to understand the project from scratch. Writes a comprehensive summary to SESSION_STATE.md.| Use when: starting fresh, after a long break, when context was lost, or when explicitly asked to "analyze the project".
 allowed-tools: Read, Glob, Grep, Bash, Write
-version: 1.0.0
 ---
 
 ## Purpose

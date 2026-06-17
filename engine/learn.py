@@ -117,10 +117,33 @@ def inject_json(root):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["add", "render", "list", "inject"])
+    ap.add_argument("cmd", choices=["add", "render", "list", "inject", "source-add", "source-list"])
     ap.add_argument("--root", default=".")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
+
+    if args.cmd in ("source-add", "source-list"):
+        import sources
+        if args.cmd == "source-add":
+            try:
+                obj = json.load(sys.stdin)
+            except Exception as e:
+                print(f"ERROR: invalid JSON on stdin: {e}", file=sys.stderr); sys.exit(1)
+            ok, msgs = sources.add(args.root, obj)
+            if not ok:
+                print("Rejected source:\n  - " + "\n  - ".join(msgs), file=sys.stderr); sys.exit(1)
+            print("Source learned." + (" " + msgs[0] if msgs else
+                  " The finder will query it alongside the web from now on."))
+        else:
+            store = sources.load(args.root)
+            if args.json:
+                print(json.dumps(store, indent=2))
+            else:
+                for s in store["sources"]:
+                    print(f"  [{s['kind']}] {s.get('name','')}  {('— ' + s['note']) if s.get('note') else ''}")
+                if not store["sources"]:
+                    print("  (no learned sources yet)")
+        return
 
     if args.cmd == "add":
         try:

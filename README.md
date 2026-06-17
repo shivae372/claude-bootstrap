@@ -1,20 +1,23 @@
 # claude-bootstrap
 
-> Give any project a professional Claude Code setup in seconds — deterministically, with zero token cost.
+> **A Claude Code setup that installs itself, heals itself, and teaches itself new skills as you work.**
 
-Claude Code is powerful, but most of that power is lost to weak configuration: no project
-context, exploration that burns your context window, no guardrails, generic prompts.
+Most people use a fraction of Claude Code's power — because configuration is hard, setups rot,
+and you hit a wall the moment you need a capability you didn't pre-install.
 
-`claude-bootstrap` fixes that in one command. It detects your stack and installs a curated,
-**tested** Claude Code configuration — sub-agents, skills, slash-commands, safety hooks, a
-tailored `CLAUDE.md`, and session continuity — tuned to how you work.
+`claude-bootstrap` makes that wall disappear. One command gives any project — and any person,
+coder or not — a professional, curated setup. Then it *keeps getting more powerful on its own*:
+when you ask for something it can't do yet, it searches the open ecosystem, installs the right
+skill, or **forges a new one** — mid-task. It heals its own config and remembers what it learns.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shivae372/claude-bootstrap/master/install.sh | bash
 ```
 
-That's it. No LLM call, no waiting, no questionnaire to sit through. Run it inside any project
-and you're set up. Prefer to read before you run? See [Install](#install) for the clone option.
+No LLM call to set up, no waiting, no questionnaire. The install is deterministic and instant;
+the *intelligence* lives in skills, hooks, and a bundled MCP server that run inside your session.
+
+**The one-liner:** _the last Claude Code setup you'll install — because it grows itself._
 
 ---
 
