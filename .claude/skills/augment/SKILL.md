@@ -38,7 +38,7 @@ SHAs, and repos with real usage. Show the user the top 1–3 with their trust/fl
 let them pick when it's a close call.
 
 ### 4a. Install a good match
-- **Official skill / plugin:** `/plugin marketplace add <owner/repo>` then `/plugin install <name>@<marketplace>`.
+- **Official skill / plugin:** add it with `/marketplace` (enter `<owner/repo>` when prompted), then `/plugin install <name>@<marketplace>`.
 - **MCP server:** `claude mcp add <name> ...` (it activates next session — tell the user).
   Record it in `.mcp.json` so the team gets it too.
 - **A SKILL.md in a repo:** fetch it, read it end-to-end, then write it into
@@ -86,5 +86,5 @@ If the capability the user needs is *understanding the codebase itself* — arch
 blast radius, "what calls X", dependency/call graph, where a concept lives — that's the
 **nodo** sibling, not a web skill. If nodo is installed (`.nodo/` or the `/nodo` skill exists),
 use `/nodo` and read `.nodo/nodo-context.json`. If not, offer to install it from the same
-marketplace: `/plugin marketplace add shivae372/claude-bootstrap` → `/plugin install nodo`
+marketplace: run `/marketplace` and enter `shivae372/claude-bootstrap`, then `/plugin install nodo@claude-bootstrap`
 (or clone `shivae372/nodo`). claude-bootstrap reads nodo's map automatically at session start.
