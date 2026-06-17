@@ -105,6 +105,38 @@ else
 fi
 # Generated CLAUDE.md must not contain unresolved mustache tags
 if grep -q '{{' "$T/CLAUDE.md" 2>/dev/null; then no "generated CLAUDE.md has no {{tags}}"; else ok "generated CLAUDE.md has no {{tags}}"; fi
+# Install must deploy the Forge engine + MCP server
+[ -f "$T/.claude/engine/doctor.py" ] && ok "install: deploys engine/" || no "install: deploys engine/"
+[ -f "$T/.claude/mcp/forge_server.py" ] && ok "install: deploys MCP server" || no "install: deploys MCP server"
+[ -f "$T/.claude/skills/augment/SKILL.md" ] && ok "install: augment skill present" || no "install: augment skill present"
+
+# ─── 8. Forge engine (self-heal / self-learn / discover / forge / MCP) ───────
+section "8. Forge engine"
+EROOT="$(mktemp -d)"; mkdir -p "$EROOT/.claude/skills/ghost" "$EROOT/.claude/hooks"
+printf '{"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command","command":"bash .claude/hooks/gone.sh"}]}]}}' > "$EROOT/.claude/settings.json"
+# doctor: detects errors on a broken setup, exit 1
+python3 engine/doctor.py --root "$EROOT" --json >/dev/null 2>&1; [ $? -eq 1 ] && ok "doctor: flags broken setup (exit 1)" || no "doctor: flags broken setup"
+DOUT="$(python3 engine/doctor.py --root "$EROOT" --json 2>/dev/null || true)"
+echo "$DOUT" | grep -q '"score"' && ok "doctor: emits JSON score" || no "doctor: emits JSON score"
+python3 engine/doctor.py --manifest >/dev/null 2>&1 && ok "doctor: --manifest works" || no "doctor: --manifest works"
+# learn: rejects junk, accepts valid
+LROOT="$(mktemp -d)"
+echo '{"category":"bogus","text":"x"}' | python3 engine/learn.py add --root "$LROOT" >/dev/null 2>&1 && no "learn: should reject bad category" || ok "learn: rejects bad category"
+echo '{"category":"stack","text":"Uses pnpm + Next.js"}' | python3 engine/learn.py add --root "$LROOT" >/dev/null 2>&1 && ok "learn: accepts valid learning" || no "learn: accepts valid learning"
+python3 engine/learn.py inject --root "$LROOT" | grep -q "additionalContext" && ok "learn: injects SessionStart context" || no "learn: injects context"
+# skill_forge: skeleton fails, scaffolds
+FROOT="$(mktemp -d)"
+python3 engine/skill_forge.py scaffold --root "$FROOT" --name demo-skill --description "Demo skill for tests. Use when the test asks for a demo." >/dev/null 2>&1 && ok "forge: scaffolds a skill" || no "forge: scaffolds"
+python3 engine/skill_forge.py validate "$FROOT/.claude/skills/demo-skill/SKILL.md" >/dev/null 2>&1 && no "forge: skeleton should fail validation" || ok "forge: rejects unfilled skeleton"
+# gap_detect: nudges on a real gap, silent on benign
+GROOT="$(mktemp -d)"; mkdir -p "$GROOT/.claude"
+echo "{\"prompt\":\"add stripe checkout\",\"cwd\":\"$GROOT\"}" | python3 engine/gap_detect.py | grep -q "augment" && ok "gap_detect: nudges on capability gap" || no "gap_detect: nudges on gap"
+echo "{\"prompt\":\"fix a typo\",\"cwd\":\"$GROOT\"}" | python3 engine/gap_detect.py | grep -q . && no "gap_detect: should be silent on benign" || ok "gap_detect: silent on benign prompt"
+# MCP server: handshake + tools
+MCPOUT="$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | python3 mcp/forge_server.py 2>/dev/null)"
+echo "$MCPOUT" | grep -q '"serverInfo"' && ok "mcp: initialize responds" || no "mcp: initialize"
+echo "$MCPOUT" | grep -q 'discover_skill' && ok "mcp: lists tools" || no "mcp: lists tools"
+rm -rf "$EROOT" "$LROOT" "$FROOT" "$GROOT" 2>/dev/null || true
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
 printf '\n\033[1m─────────────────────────────\033[0m\n'
