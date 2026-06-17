@@ -1,241 +1,147 @@
 # claude-bootstrap
 
-> Generate a professional Claude Code setup for any project in minutes.
+> Give any project a professional Claude Code setup in seconds — deterministically, with zero token cost.
 
-Claude Code is powerful — but most users lose 60% of its value to poor configuration, token waste, and generic prompts.
+Claude Code is powerful, but most of that power is lost to weak configuration: no project
+context, exploration that burns your context window, no guardrails, generic prompts.
 
-`claude-bootstrap` reads your project and generates a fully custom Claude Code setup: sub-agents, skills, hooks, CLAUDE.md, and session continuity — tailored to your exact stack and how you work.
-
-## What Gets Generated
-
-| Component | What it does |
-|-----------|-------------|
-| **CLAUDE.md** | Project context file — tells Claude your stack, rules, and workflow |
-| **Sub-agents** | Isolated explorers and specialists that don't burn your main context |
-| **Skills** | On-demand instruction sets for common workflows (`/test`, `/review`, `/deploy`) |
-| **Hooks** | Shell scripts that auto-format, block dangerous commands, and checkpoint sessions |
-| **SESSION_STATE.md** | Session continuity — Claude resumes exactly where you left off |
-
-## Prerequisites
-
-| Requirement | How to install |
-|-------------|---------------|
-| **Claude Code** | [claude.ai/code](https://claude.ai/code) |
-| **Python 3.8+** | [python.org](https://www.python.org/downloads/) — already installed on macOS/Linux; use the installer or `winget install Python.Python.3` on Windows |
-| **Git** | [git-scm.com](https://git-scm.com/downloads) |
-| **Bash** | Built-in on macOS/Linux. On Windows: use [Git Bash](https://git-scm.com/downloads) (included with Git) or WSL |
-
-## Quick Start
+`claude-bootstrap` fixes that in one command. It detects your stack and installs a curated,
+**tested** Claude Code configuration — sub-agents, skills, slash-commands, safety hooks, a
+tailored `CLAUDE.md`, and session continuity — tuned to how you work.
 
 ```bash
-# From your project root (use Git Bash on Windows):
-git clone https://github.com/shivae370/claude-bootstrap
-bash claude-bootstrap/scripts/bootstrap.sh
+curl -fsSL https://raw.githubusercontent.com/shivae372/claude-bootstrap/master/install.sh | bash
 ```
 
-That's it. The script detects your stack, asks 6 quick questions, and generates everything.
-
-### Windows Users
-
-If you're on Windows, use one of these options:
-
-**Option A — Git Bash** (recommended, no setup needed):
-```bash
-# Open Git Bash, then navigate to your project:
-cd /c/Users/YourName/your-project
-git clone https://github.com/shivae370/claude-bootstrap
-bash claude-bootstrap/scripts/bootstrap.sh
-```
-
-**Option B — WSL (Windows Subsystem for Linux)**:
-```bash
-# Inside your WSL terminal:
-git clone https://github.com/shivae370/claude-bootstrap
-bash claude-bootstrap/scripts/bootstrap.sh
-```
-
-**Option C — Run detection only (no bash needed)**:
-```bash
-# Detect your stack using Python directly:
-python claude-bootstrap/.claude/skills/onboarding/scripts/detect-project.py --target .
-```
-
-## Who This Is For
-
-| You are... | What you get |
-|------------|-------------|
-| **Developer** (tech level 4-5) | Full agent set, TDD workflow, code review, security scan, git hooks |
-| **Founder / Designer** (tech level 2-3) | Simplified agents, plain-language hooks, product advisor, launch planner |
-| **Non-technical** (tech level 1-2) | No agents, plain-English skills, content writer, data analyst |
-
-## Supported Stacks
-
-Detection is automatic. Supported out of the box:
-
-- **Next.js** / React / Node.js
-- **Python** (Django, FastAPI, Flask)
-- **Go** (Gin, Echo, Fiber, Chi)
-- **Rust** (Axum, Actix, Rocket)
-- **Ruby** (Rails, Sinatra)
-- **Java** (Spring Boot, Quarkus)
-- **Monorepos** (Turborepo, Nx)
-- **No stack** (scripts, docs, data projects)
-
-## What the Setup Achieves
-
-**Before bootstrap:**
-- Claude reads entire files to answer simple questions (expensive)
-- No memory between sessions — re-explain the project every time
-- Dangerous commands run without guardrails
-- Generic prompts get generic results
-
-**After bootstrap:**
-- Sub-agents handle exploration — main context stays clean
-- SESSION_STATE.md lets Claude resume without re-explaining
-- Hooks block destructive commands before they run
-- Skills give Claude precise instructions for your specific workflow
-
-## How It Works
-
-```
-bootstrap.sh
-    │
-    ├── 1. Onboarding (6 questions → USER_PROFILE.json)
-    ├── 2. Project detection (detect-project.py → stack, language, tools)
-    ├── 3. Template selection (based on generation_tier)
-    ├── 4. Blueprint (JSON preview — you confirm before any files written)
-    ├── 5. File generation (CLAUDE.md, agents, skills, hooks)
-    ├── 6. Validation (validate.sh — checks all required fields)
-    └── 7. Summary (what was created and why)
-```
-
-## After Bootstrap
-
-```bash
-# Start Claude Code in your project
-claude
-
-# Available skills (type in Claude Code)
-/plan       # Break a feature into tasks
-/test       # Run test suite
-/review     # Code review current diff
-/deploy     # Deploy to your configured target
-/security   # Security audit
-/tips       # Personalized tips for your setup
-/update     # Check for bootstrap updates
-```
-
-## Manual Onboarding
-
-If you want to set up your profile before bootstrapping:
-
-```bash
-# Run just the onboarding (no files written yet)
-claude --print "Run the onboarding skill: Skill('onboarding')"
-```
-
-Or answer the 6 questions manually and write `USER_PROFILE.json`:
-
-```json
-{
-  "role_type": "developer",
-  "tech_level": 4,
-  "team_size": "small",
-  "domain": "software",
-  "primary_goals": ["ship faster", "save tokens"],
-  "success_in_30_days": "deploy v2"
-}
-```
-
-Then run `bash claude-bootstrap/scripts/bootstrap.sh` — it will skip onboarding and go straight to generation.
-
-## Updating Your Setup
-
-Your bootstrap version is tracked in `USER_PROFILE.json`. To check for updates:
-
-```bash
-claude --print "Skill('self-update')"
-```
-
-## File Reference
-
-```
-claude-bootstrap/
-├── CLAUDE.md                          # Orchestrator instructions (this file)
-├── SESSION_STATE.md                   # Session continuity template
-├── scripts/
-│   ├── bootstrap.sh                   # Main entry point
-│   ├── validate.sh                    # Setup validator
-│   └── format.sh                      # Multi-language code formatter
-├── docs/
-│   ├── FORMATS.md                     # File format specifications
-│   ├── stacks/                        # Stack-specific configurations
-│   │   ├── nextjs.md
-│   │   ├── python.md
-│   │   ├── go.md
-│   │   ├── rust.md
-│   │   ├── ruby.md
-│   │   ├── java.md
-│   │   ├── monorepo.md
-│   │   └── no-stack.md
-│   └── templates/                     # Tier-specific templates
-│       ├── developer/
-│       ├── hybrid/
-│       ├── non-dev/
-│       └── agents/                    # Reusable agent templates
-└── .claude/
-    ├── skills/
-    │   ├── onboarding/                # First-run setup
-    │   ├── analyze-repo/              # Codebase analysis
-    │   ├── code-review/               # PR review
-    │   ├── context-guard/             # Token budget protection
-    │   ├── dep-check/                 # Dependency audit
-    │   ├── git-workflow/              # Git conventions
-    │   ├── security-scan/             # Security audit
-    │   ├── self-update/               # Bootstrap updates
-    │   ├── test-runner/               # Test suite runner
-    │   └── tips/                      # Contextual tips
-    └── hooks/
-        ├── checkpoint.sh              # Session state + drift detection
-        ├── format.sh                  # Auto-formatter
-        ├── notify.sh                  # Desktop notifications
-        ├── safety-check.sh            # Blocks dangerous commands
-        └── secret-detector.sh         # Blocks writing credentials
-```
-
-## Contributing
-
-Adding a new stack template:
-1. Create `docs/stacks/<name>.md` — see [docs/FORMATS.md](docs/FORMATS.md) for the schema
-2. Add detection logic to `.claude/skills/onboarding/scripts/detect-project.py`
-3. Test: `python3 .claude/skills/onboarding/scripts/detect-project.py --target <sample-project>`
-
-Adding a new agent template:
-1. Create `docs/templates/agents/<name>.md` with YAML frontmatter
-2. Reference it in the appropriate tier's `agents.md`
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
-
-## Roadmap
-
-This repo is the first piece of a larger vision — making Claude the most powerful coding partner ever built.
-
-**Coming next:**
-
-- **claude-cowork** — Real-time multiplayer Claude sessions. Multiple people, one Claude, shared context.
-- **claude-memory-pro** — Persistent long-term memory across sessions, projects, and teams.
-- **claude-review-bot** — GitHub App that auto-reviews every PR using your codebase's own conventions.
-- **claude-standup** — Daily async standups powered by Claude. Reads your commits, writes the update.
-- **claude-onboard** — Drop a new developer into any codebase in under an hour.
-- **stack-packs** — Pre-built bootstrap configs for every major stack (Supabase, Convex, Railway, Fly.io, AWS).
-- **claude-incident** — On-call Claude. Reads your runbooks, traces the logs, suggests the fix.
-
-Star the repo to follow along. PRs welcome.
+That's it. No LLM call, no waiting, no questionnaire to sit through. Run it inside any project
+and you're set up. Prefer to read before you run? See [Install](#install) for the clone option.
 
 ---
 
+## Why it's different
+
+Most "AI setup" tools ask a model to *generate* your config on the fly — slow, non-deterministic,
+and it often half-works. claude-bootstrap inverts that:
+
+- **Deterministic core.** A real installer copies battle-tested components and renders your
+  `CLAUDE.md` from detected facts. Same input → same output, every time. Works offline once cloned.
+- **AI only where judgment helps.** Want bespoke tailoring? Run `/bootstrap` *inside* Claude Code,
+  where it can actually ask questions and write files with your approval.
+- **Self-tested.** Every hook, the installer, and the validator are covered by a CI test suite
+  (`tests/run.sh`) that runs on Linux and macOS.
+
+## What gets installed
+
+| Component | What it does |
+|---|---|
+| **`CLAUDE.md`** | Project context — stack, commands, conventions, rules. Generated from your project, kept ≤150 lines. |
+| **Sub-agents** (`.claude/agents/`) | Isolated specialists (explorer, code-reviewer, test-runner, security-scanner, dep-checker, doc-writer) that keep your main context clean. |
+| **Skills** (`.claude/skills/`) | On-demand workflows Claude auto-invokes (code review, security scan, git workflow, repo analysis, …). |
+| **Slash commands** (`.claude/commands/`) | One-word workflows: `/plan`, `/test`, `/review`, `/security`, `/deps`, `/ship`, `/checkpoint`, `/tips`, `/update`, `/onboard`, `/bootstrap`. |
+| **Hooks** (`.claude/hooks/`) | Shell guardrails: block destructive commands, stop real secrets from being written, auto-format on save, checkpoint before compaction, resume on session start. |
+| **`SESSION_STATE.md`** | Working memory. The SessionStart hook feeds it back so Claude resumes without re-explaining. |
+
+## Install
+
+**One-liner (recommended):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/shivae372/claude-bootstrap/master/install.sh | bash
+```
+
+**From a clone (inspect first):**
+```bash
+git clone https://github.com/shivae372/claude-bootstrap
+bash claude-bootstrap/install.sh --dir /path/to/your/project
+```
+
+**Common options:**
+```bash
+bash install.sh --tier non-dev --yes      # plain-English setup, no prompts
+bash install.sh --dry-run                  # preview exactly what would be written
+bash install.sh --merge                    # add only missing files; never overwrite yours
+bash install.sh --no-hooks                 # skip the guardrail hooks
+bash install.sh --uninstall                # remove the setup (backs up first)
+bash install.sh --help                     # all options
+```
+
+The installer **backs up** any existing `.claude/` to `.claude.backup.<timestamp>` before making
+changes, so re-running is always safe.
+
+## Who it's for
+
+| You are… | Pass | What you get |
+|---|---|---|
+| **Developer** (comfortable in the terminal) | `--tier developer` | Full agent set, TDD/review/security commands, git + safety hooks |
+| **Founder / designer / PM** | `--tier hybrid` | Lighter agent set, plain-language workflow, the core commands |
+| **Non-technical** | `--tier non-dev` | No agents, gentle plain-English skills, `/plan` + `/tips` |
+
+Omit `--tier` and the installer asks once (or pass `--tech 1-5` to infer it).
+
+## Supported stacks
+
+Detection is automatic (`--stack` to override): **Next.js / React / Node**, **Python**
+(Django / FastAPI / Flask), **Go**, **Rust**, **Ruby** (Rails / Sinatra), **Java**
+(Spring / Quarkus), **monorepos** (Turborepo / Nx), and a sensible **no-stack** fallback for
+scripts, docs, infra, and data projects.
+
+## After install — your new workflow
+
+```bash
+claude                # start Claude Code in your project
+```
+
+| Command | Does |
+|---|---|
+| `/bootstrap` | Tailor the setup further, interactively (asks first, then writes) |
+| `/plan` | Break a feature into an ordered checklist before coding |
+| `/test` | Run the suite; get a parsed pass/fail summary |
+| `/review` | Severity-ranked review of your diff |
+| `/security` | Audit for auth/injection/secret issues |
+| `/deps` | Vulnerability + outdated-dependency audit |
+| `/ship` | Gate: tests → review → security → clean commit/PR |
+| `/checkpoint` | Snapshot state into `SESSION_STATE.md` now |
+| `/tips` · `/update` · `/onboard` | Tips, self-update, first-run profile |
+
+## How it works
+
+```
+install.sh
+   ├── detect stack            (deterministic; detect-project.py, bash fallback)
+   ├── resolve tier            (flag, --tech, or one prompt)
+   ├── back up existing .claude (timestamped)
+   ├── copy curated components  (agents · skills · commands · hooks · settings)
+   ├── render CLAUDE.md         (scripts/render.py ← template + detected facts)
+   ├── write SESSION_STATE.md + .claude/.bootstrap.json (version marker)
+   └── validate.sh             (verifies the result)
+```
+
+## Requirements
+
+- **Claude Code** — [claude.ai/code](https://claude.ai/code)
+- **bash** + **curl** — preinstalled on macOS/Linux. On Windows use **Git Bash** or **WSL**.
+- **Python 3.8+** *(optional)* — improves stack detection and `CLAUDE.md` rendering; the installer
+  has a pure-bash fallback if it's missing.
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `curl … \| bash` blocked by a proxy | Use the clone install instead. |
+| Stack detected as `no-stack` | Pass `--stack nextjs` (etc.), or run `/bootstrap` to tailor by hand. |
+| A hook blocked something legitimate | One-off bypass: `CLAUDE_BOOTSTRAP_ALLOW_DANGEROUS=1` (safety) or `CLAUDE_BOOTSTRAP_ALLOW_SECRETS=1` (secrets). |
+| Want to undo everything | `bash install.sh --uninstall` (backs up to `.claude.backup.<ts>`). |
+
+## Contributing
+
+PRs welcome — new stacks, agents, and hooks especially. Run `bash tests/run.sh` before
+submitting (CI runs it on Linux + macOS). See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Roadmap
+
+Ideas, not promises — the items below are not built yet:
+`claude-cowork` (shared sessions) · `claude-memory-pro` (cross-project memory) ·
+`claude-review-bot` (PR auto-review) · `stack-packs` (more turnkey stacks).
+
 ## License
 
-Apache 2.0 — See [LICENSE](LICENSE) for details.
-
-Patent protection is provided under the Apache 2.0 patent grant. Contributors grant users a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable patent license.
+Apache 2.0 — see [LICENSE](LICENSE). Patent grant included per the Apache 2.0 terms.
