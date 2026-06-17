@@ -37,7 +37,7 @@ persists and applies deterministically — offline, zero-dependency, validated b
   `capability_audit`, `heal_report`, `record_learning`, and `learn_source` — so Claude can augment,
   heal, and *extend* the setup live, mid-session. Registered via `.mcp.json`.
 - **Plugin packaging** (`.claude-plugin/plugin.json` + `marketplace.json` + `hooks.json`) so the
-  whole thing installs via `/plugin marketplace add shivae372/claude-bootstrap` (experimental;
+  whole thing installs via `/marketplace` → `shivae372/claude-bootstrap` (experimental;
   the installer remains the validated path).
 
 ### Changed
@@ -64,7 +64,7 @@ persists and applies deterministically — offline, zero-dependency, validated b
   map present/stale?) in findings and the capability manifest. The real-time gap hook routes
   architecture / blast-radius questions to nodo and offers to install it when absent.
 - **One marketplace:** `.claude-plugin/marketplace.json` now lists both `claude-bootstrap` and
-  `nodo`, so `/plugin marketplace add shivae372/claude-bootstrap` offers the whole ecosystem.
+  `nodo`, so adding `shivae372/claude-bootstrap` via `/marketplace` offers the whole ecosystem.
 
 ### Known limitations (honest)
 - MCP servers can't be hot-registered into a *running* session — `.mcp.json`/`claude mcp add`
