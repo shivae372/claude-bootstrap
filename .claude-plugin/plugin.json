@@ -1,0 +1,15 @@
+{
+  "name": "claude-bootstrap",
+  "version": "1.1.0",
+  "description": "Self-healing, self-learning Claude Code setup. Finds, installs, or forges the skills/MCP your project needs — in real time, as you work.",
+  "author": { "name": "Shiva Kumar Esakki Pandiyan", "url": "https://github.com/shivae372" },
+  "homepage": "https://github.com/shivae372/claude-bootstrap",
+  "repository": "https://github.com/shivae372/claude-bootstrap",
+  "license": "Apache-2.0",
+  "keywords": ["self-healing", "self-learning", "skills", "mcp", "agent-skills", "automation"],
+  "skills": "./.claude/skills",
+  "agents": "./.claude/agents",
+  "commands": "./.claude/commands",
+  "hooks": "./.claude/hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}
