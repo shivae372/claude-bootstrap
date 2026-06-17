@@ -69,6 +69,19 @@ TOOLS = [
          "text": {"type": "string"},
          "tags": {"type": "array", "items": {"type": "string"}}},
          "required": ["category", "text"]}},
+    {"name": "learn_source",
+     "description": "Teach the discovery engine a NEW resource it should search from now on, "
+                    "alongside the web — use when web search missed something but you found it "
+                    "another way (a specific GitHub org, a vendor JSON search endpoint, or a hint).",
+     "inputSchema": {"type": "object", "properties": {
+         "kind": {"type": "string", "enum": ["github_org", "http_json", "hint"]},
+         "org": {"type": "string", "description": "for github_org: the org login, e.g. 'stripe'"},
+         "name": {"type": "string"},
+         "url": {"type": "string", "description": "for http_json: https URL containing {query}"},
+         "list_path": {"type": "string"}, "name_field": {"type": "string"}, "url_field": {"type": "string"},
+         "text": {"type": "string", "description": "for hint: the guidance to remember"},
+         "note": {"type": "string"}},
+         "required": ["kind"]}},
 ]
 
 
@@ -88,6 +101,8 @@ def call_tool(name, args):
         payload = json.dumps({"category": args.get("category"), "text": args.get("text"),
                               "tags": args.get("tags", [])})
         return _txt(_run([f"{e}/learn.py", "add"], stdin_text=payload))
+    if name == "learn_source":
+        return _txt(_run([f"{e}/learn.py", "source-add"], stdin_text=json.dumps(args)))
     return {"content": [{"type": "text", "text": f"unknown tool {name}"}], "isError": True}
 
 
