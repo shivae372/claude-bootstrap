@@ -2,7 +2,6 @@
 name: security-scan
 description: Security audit skill. Invoke before deploying, after adding auth code, or when reviewing for vulnerabilities. Auto-activates on "security check", "check for vulnerabilities", "pre-deploy audit", "scan for secrets", "is this auth secure". Routes to security-scanner sub-agent.
 allowed-tools: Bash, Read
-version: 1.0.0
 ---
 
 ## Purpose
