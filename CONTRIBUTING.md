@@ -1,63 +1,52 @@
 # Contributing to claude-bootstrap
 
-This is a community project. The goal is to build the best possible automatic Claude Code setup generator, covering every major stack.
+The goal: the best possible Claude Code setup generator, covering every major stack — and one
+that actually works on a fresh machine, every time. Reliability is the product.
 
-## What We Need
+## Ground rules
 
-### Stack Templates
-The highest-value contributions are stack-specific templates in `docs/stacks/`. Current gaps:
-- `flutter.md` — Flutter/Dart projects
-- `elixir.md` — Phoenix/Elixir projects
-- `dotnet.md` — .NET/C# projects
-- `swift.md` — Swift/iOS projects
+1. **Everything is tested.** Add or update a check in `tests/run.sh` for any behavior you change.
+   Run `bash tests/run.sh` locally; CI runs it on Linux + macOS for every PR.
+2. **Deterministic core stays deterministic.** `install.sh`, `render.py`, hooks, and `validate.sh`
+   must never require an LLM or network (except the `curl | bash` self-download).
+3. **No hallucinated features.** Everything must map to real Claude Code behavior — see
+   [docs/FORMATS.md](docs/FORMATS.md) and the hook contracts in [CLAUDE.md](CLAUDE.md).
+4. **Hooks are safe and bypassable.** Blocking hooks (exit 2) print the reason to stderr and offer
+   an env-var bypass for deliberate use.
+5. **Agents stay scoped** (one job, explicit `tools`). **Skills always have a `SKILL.md`.**
+   **`CLAUDE.md` stays ≤150 lines.**
 
-### Improved Agents
-If you've found a better system prompt for an existing agent, submit a PR. Include:
-- What was wrong with the old prompt
-- What your version does better
-- A before/after example
+## High-value contributions
 
-### Better Hooks
-Shell scripts in `.claude/hooks/` that solve real problems. Good candidates:
-- Auto-run type checking after TS file edits
-- Slack/Discord notifications on task completion
-- Auto-update `SESSION_STATE.md` on `Stop` event
-- Git blame integration for code review context
+- **New stack templates** in `docs/stacks/` — e.g. `flutter.md`, `elixir.md`, `dotnet.md`, `swift.md`.
+  Then add detection to `.claude/skills/onboarding/scripts/detect-project.py` and a stack mapping
+  in `install.sh`'s `map_stack`.
+- **Better hooks / agents / skills** — include what was wrong before and a before/after.
+- **More tests** — edge cases for detection, hook block/allow, installer flags.
 
-## PR Format
-
-```
-## What
-[One sentence: what you added or changed]
-
-## Why
-[What problem this solves]
-
-## Stack
-[Which stack(s) this applies to, or "universal"]
-
-## Tested on
-[OS, Claude Code version, project type you tested with]
-```
-
-## Rules
-
-1. **No hallucination** — every feature must be based on actual Claude Code docs. Check `docs/FORMATS.md` for the format specs.
-2. **Agents stay scoped** — don't create agents that do multiple unrelated jobs.
-3. **Hooks must be safe** — blocking hooks (exit 2) must have a clear bypass path for legitimate use cases.
-4. **CLAUDE.md stays lean** — the root CLAUDE.md must stay under 150 lines.
-5. **Test before submitting** — clone the repo into a real project and run the bootstrap.
-
-## Local Testing
+## Local development
 
 ```bash
-# Clone into a test project
-cd my-test-project
-git clone https://github.com/shivae370/claude-bootstrap.git
+git clone https://github.com/shivae372/claude-bootstrap
+cd claude-bootstrap
 
-# Run bootstrap
-bash claude-bootstrap/scripts/bootstrap.sh
+# Try the installer against a throwaway project
+mkdir -p /tmp/demo && echo '{"dependencies":{"next":"14"}}' > /tmp/demo/package.json
+bash install.sh --dir /tmp/demo --tier developer --yes --dry-run   # preview
+bash install.sh --dir /tmp/demo --tier developer --yes             # for real
+bash scripts/validate.sh                                            # (from /tmp/demo)
 
-# Validate output
-bash claude-bootstrap/scripts/validate.sh
+# Run the full suite before opening a PR
+bash tests/run.sh
 ```
+
+## PR format
+
+```
+## What     — one sentence: what you added/changed
+## Why      — the problem it solves
+## Stack    — which stack(s), or "universal"
+## Tested   — OS + how you verified (and `bash tests/run.sh` passing)
+```
+
+Bump `VERSION` and add a `CHANGELOG.md` entry for user-facing changes.

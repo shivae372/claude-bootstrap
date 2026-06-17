@@ -1,247 +1,165 @@
-#!/bin/bash
-# validate.sh
-# Validates the Claude Code setup after bootstrap.
-# Run from your project root: bash scripts/validate.sh
-# Or Claude calls this automatically at the end of Step 4.
+#!/usr/bin/env bash
+# validate.sh — verify a Claude Code setup is correct and complete.
+# Run from your project root:  bash scripts/validate.sh [--quiet] [--json]
+# Exit 0 if no errors (warnings allowed), 1 if any errors.
+set -uo pipefail
 
-ERRORS=0
-WARNINGS=0
-PASS=0
+QUIET=0; JSON=0
+for a in "$@"; do
+  case "$a" in
+    --quiet|-q) QUIET=1 ;;
+    --json) JSON=1; QUIET=1 ;;
+    -h|--help) echo "usage: validate.sh [--quiet] [--json]"; exit 0 ;;
+  esac
+done
 
-# ─── Colors ─────────────────────────────────────────────────────
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BOLD='\033[1m'
-NC='\033[0m'
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ] && [ "$JSON" -eq 0 ]; then
+  RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[1;33m'; BOLD=$'\033[1m'; NC=$'\033[0m'
+else RED=''; GREEN=''; YELLOW=''; BOLD=''; NC=''; fi
 
-pass() { echo -e "  ${GREEN}✓${NC} $1"; PASS=$((PASS+1)); }
-warn() { echo -e "  ${YELLOW}⚠${NC} $1"; WARNINGS=$((WARNINGS+1)); }
-fail() { echo -e "  ${RED}✗${NC} $1"; ERRORS=$((ERRORS+1)); }
+ERRORS=0; WARNINGS=0; PASS=0
+declare -a ISSUES=()
+pass() { PASS=$((PASS+1)); [ "$QUIET" -eq 1 ] || printf '  %s✓%s %s\n' "$GREEN" "$NC" "$1"; }
+warn() { WARNINGS=$((WARNINGS+1)); ISSUES+=("warn: $1"); [ "$QUIET" -eq 1 ] || printf '  %s⚠%s %s\n' "$YELLOW" "$NC" "$1"; }
+fail() { ERRORS=$((ERRORS+1)); ISSUES+=("error: $1"); [ "$QUIET" -eq 1 ] || printf '  %s✗%s %s\n' "$RED" "$NC" "$1"; }
+hdr()  { [ "$QUIET" -eq 1 ] || printf '\n%s%s%s\n' "$BOLD" "$1" "$NC"; }
 
-echo ""
-echo -e "${BOLD}Validating Claude Code setup...${NC}"
-echo ""
+is_int() { case "${1:-}" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
 
-# ─── CLAUDE.md ──────────────────────────────────────────────────
-echo -e "${BOLD}CLAUDE.md${NC}"
+[ "$QUIET" -eq 1 ] || printf '\n%sValidating Claude Code setup…%s\n' "$BOLD" "$NC"
 
-if [ -f "CLAUDE.md" ]; then
+# ─── CLAUDE.md ───────────────────────────────────────────────────────────────
+hdr "CLAUDE.md"
+if [ -f CLAUDE.md ]; then
   pass "CLAUDE.md exists"
-  LINE_COUNT=$(wc -l < CLAUDE.md)
-  if [ "$LINE_COUNT" -le 150 ]; then
-    pass "CLAUDE.md is $LINE_COUNT lines (≤150 limit)"
-  else
-    warn "CLAUDE.md is $LINE_COUNT lines — exceeds 150 line recommendation. Claude's attention degrades past this point."
-  fi
+  LC="$(wc -l < CLAUDE.md | tr -d ' ')"
+  if is_int "$LC" && [ "$LC" -le 150 ]; then pass "CLAUDE.md is $LC lines (≤150)"
+  else warn "CLAUDE.md is $LC lines — trim toward ≤150 (attention degrades past this)"; fi
 else
   fail "CLAUDE.md missing — Claude has no project context"
 fi
 
-echo ""
-
-# ─── .claude/ directory ─────────────────────────────────────────
-echo -e "${BOLD}.claude/ directory${NC}"
-
-if [ -d ".claude" ]; then
-  pass ".claude/ directory exists"
-else
-  fail ".claude/ directory missing"
-fi
-
-if [ -f ".claude/settings.json" ]; then
+# ─── .claude + settings.json ─────────────────────────────────────────────────
+hdr ".claude/ + settings.json"
+[ -d .claude ] && pass ".claude/ exists" || fail ".claude/ directory missing"
+if [ -f .claude/settings.json ]; then
   pass ".claude/settings.json exists"
-  # Validate JSON
-  if python3 -c "import json; json.load(open('.claude/settings.json'))" 2>/dev/null; then
-    pass ".claude/settings.json is valid JSON"
-  else
-    fail ".claude/settings.json is invalid JSON"
-  fi
-else
-  fail ".claude/settings.json missing — hooks not configured"
-fi
-
-echo ""
-
-# ─── Sub-agents ─────────────────────────────────────────────────
-echo -e "${BOLD}Sub-agents (.claude/agents/)${NC}"
-
-if [ -d ".claude/agents" ]; then
-  AGENT_COUNT=$(ls .claude/agents/*.md 2>/dev/null | wc -l)
-  if [ "$AGENT_COUNT" -gt 0 ]; then
-    pass "$AGENT_COUNT agent(s) found"
-    
-    for agent_file in .claude/agents/*.md; do
-      AGENT_NAME=$(basename "$agent_file" .md)
-      
-      # Check required frontmatter fields
-      HAS_NAME=$(grep -c "^name:" "$agent_file" 2>/dev/null || echo 0)
-      HAS_DESC=$(grep -c "^description:" "$agent_file" 2>/dev/null || echo 0)
-      HAS_MODEL=$(grep -c "^model:" "$agent_file" 2>/dev/null || echo 0)
-      HAS_TOOLS=$(grep -c "^tools:" "$agent_file" 2>/dev/null || echo 0)
-      
-      if [ "$HAS_NAME" -gt 0 ] && [ "$HAS_DESC" -gt 0 ] && [ "$HAS_MODEL" -gt 0 ] && [ "$HAS_TOOLS" -gt 0 ]; then
-        pass "  $AGENT_NAME — valid (name, description, model, tools present)"
-      else
-        MISSING=""
-        [ "$HAS_NAME" -eq 0 ] && MISSING="$MISSING name"
-        [ "$HAS_DESC" -eq 0 ] && MISSING="$MISSING description"
-        [ "$HAS_MODEL" -eq 0 ] && MISSING="$MISSING model"
-        [ "$HAS_TOOLS" -eq 0 ] && MISSING="$MISSING tools"
-        fail "  $AGENT_NAME — missing frontmatter:$MISSING"
-      fi
-      
-      # Check line count
-      AGENT_LINES=$(wc -l < "$agent_file")
-      if [ "$AGENT_LINES" -gt 400 ]; then
-        warn "  $AGENT_NAME is $AGENT_LINES lines — exceeds 400 line recommendation"
-      fi
-    done
-    
-    if [ "$AGENT_COUNT" -gt 8 ]; then
-      warn "More than 8 agents detected ($AGENT_COUNT) — consider using agent teams for this scale"
-    fi
-  else
-    warn "No agent files found in .claude/agents/ — exploration tasks will use main context"
-  fi
-else
-  warn ".claude/agents/ directory missing"
-fi
-
-echo ""
-
-# ─── Skills ─────────────────────────────────────────────────────
-echo -e "${BOLD}Skills (.claude/skills/)${NC}"
-
-if [ -d ".claude/skills" ]; then
-  SKILL_COUNT=$(find .claude/skills -name "SKILL.md" 2>/dev/null | wc -l)
-  if [ "$SKILL_COUNT" -gt 0 ]; then
-    pass "$SKILL_COUNT skill(s) found"
-    
-    for skill_md in $(find .claude/skills -name "SKILL.md"); do
-      SKILL_DIR=$(dirname "$skill_md")
-      SKILL_NAME=$(basename "$SKILL_DIR")
-      
-      HAS_NAME=$(grep -c "^name:" "$skill_md" 2>/dev/null || echo 0)
-      HAS_DESC=$(grep -c "^description:" "$skill_md" 2>/dev/null || echo 0)
-      
-      if [ "$HAS_NAME" -gt 0 ] && [ "$HAS_DESC" -gt 0 ]; then
-        pass "  $SKILL_NAME — valid"
-      else
-        fail "  $SKILL_NAME — missing name or description in frontmatter"
-      fi
-    done
-  else
-    warn "No SKILL.md files found — manual workflow automation not configured"
-  fi
-else
-  warn ".claude/skills/ directory missing"
-fi
-
-echo ""
-
-# ─── Hooks ──────────────────────────────────────────────────────
-echo -e "${BOLD}Hooks (.claude/hooks/)${NC}"
-
-if [ -d ".claude/hooks" ]; then
-  HOOK_COUNT=$(ls .claude/hooks/*.sh 2>/dev/null | wc -l)
-  if [ "$HOOK_COUNT" -gt 0 ]; then
-    pass "$HOOK_COUNT hook script(s) found"
-    
-    for hook_file in .claude/hooks/*.sh; do
-      HOOK_NAME=$(basename "$hook_file")
-      if [ -x "$hook_file" ]; then
-        pass "  $HOOK_NAME — executable"
-      else
-        warn "  $HOOK_NAME — not executable (run: chmod +x $hook_file)"
-      fi
-    done
-  else
-    warn "No hook scripts found"
-  fi
-else
-  warn ".claude/hooks/ directory missing"
-fi
-
-# Check hooks are referenced in settings.json
-if [ -f ".claude/settings.json" ]; then
-  HAS_HOOKS=$(python3 -c "import json; d=json.load(open('.claude/settings.json')); print('yes' if d.get('hooks') else 'no')" 2>/dev/null)
-  if [ "$HAS_HOOKS" = "yes" ]; then
-    pass "Hooks referenced in settings.json"
-  else
-    warn "settings.json exists but no hooks configured"
-  fi
-fi
-
-echo ""
-
-# ─── USER_PROFILE.json ──────────────────────────────────────────
-echo -e "${BOLD}User profile${NC}"
-
-if [ -f "USER_PROFILE.json" ]; then
-  pass "USER_PROFILE.json exists"
-  # Validate JSON
-  if python3 -c "import json; json.load(open('USER_PROFILE.json'))" 2>/dev/null; then
-    pass "USER_PROFILE.json is valid JSON"
-    # Check required fields
-    TIER=$(python3 -c "import json; p=json.load(open('USER_PROFILE.json')); print(p.get('generation_tier','MISSING'))" 2>/dev/null)
-    if [ "$TIER" = "MISSING" ]; then
-      fail "USER_PROFILE.json missing required field: generation_tier"
-    elif [ "$TIER" = "developer" ] || [ "$TIER" = "hybrid" ] || [ "$TIER" = "non-dev" ]; then
-      pass "generation_tier is valid: $TIER"
+  if command -v python3 >/dev/null 2>&1; then
+    if python3 -c "import json;json.load(open('.claude/settings.json'))" 2>/dev/null; then
+      pass "settings.json is valid JSON"
+      # Every hook command referenced must exist on disk. (Temp file, not process
+      # substitution, so this works without /dev/fd and keeps counters in-shell.)
+      _hooks_tmp="$(mktemp 2>/dev/null || echo /tmp/cb_hooks.$$)"
+      python3 -c "
+import json,re
+d=json.load(open('.claude/settings.json'))
+for ev in (d.get('hooks') or {}).values():
+    for grp in ev:
+        for h in grp.get('hooks',[]):
+            m=re.search(r'(\.claude/hooks/[A-Za-z0-9._-]+\.sh)', h.get('command',''))
+            if m: print(m.group(1))
+" > "$_hooks_tmp" 2>/dev/null || true
+      while IFS= read -r hookfile; do
+        [ -z "$hookfile" ] && continue
+        if [ -f "$hookfile" ]; then
+          [ -x "$hookfile" ] && pass "hook present + executable: $hookfile" || warn "hook not executable: $hookfile (chmod +x)"
+        else
+          fail "settings.json references a missing hook: $hookfile"
+        fi
+      done < "$_hooks_tmp"
+      rm -f "$_hooks_tmp"
     else
-      fail "generation_tier has invalid value: $TIER (must be developer|hybrid|non-dev)"
+      fail "settings.json is invalid JSON"
     fi
-    TECH=$(python3 -c "import json; p=json.load(open('USER_PROFILE.json')); t=p.get('tech_level',0); print(t)" 2>/dev/null)
-    if [ "$TECH" -ge 1 ] && [ "$TECH" -le 5 ] 2>/dev/null; then
-      pass "tech_level is valid: $TECH"
-    else
-      warn "USER_PROFILE.json missing or invalid tech_level"
-    fi
-  else
-    fail "USER_PROFILE.json is invalid JSON"
   fi
 else
-  warn "USER_PROFILE.json missing — run onboarding first (/onboard or Skill('onboarding'))"
+  warn ".claude/settings.json missing — hooks not configured"
 fi
 
-echo ""
-
-# ─── SESSION_STATE.md ───────────────────────────────────────────
-echo -e "${BOLD}Session continuity${NC}"
-
-if [ -f "SESSION_STATE.md" ]; then
-  pass "SESSION_STATE.md exists"
+# ─── Agents ──────────────────────────────────────────────────────────────────
+hdr "Agents (.claude/agents/)"
+if [ -d .claude/agents ]; then
+  n=0
+  for f in .claude/agents/*.md; do
+    [ -e "$f" ] || continue
+    n=$((n+1)); name="$(basename "$f" .md)"; miss=""
+    grep -q "^name:" "$f" || miss="$miss name"
+    grep -q "^description:" "$f" || miss="$miss description"
+    grep -q "^model:" "$f" || miss="$miss model"
+    grep -q "^tools:" "$f" || miss="$miss tools"
+    [ -z "$miss" ] && pass "agent $name — frontmatter ok" || fail "agent $name — missing:$miss"
+  done
+  [ "$n" -gt 0 ] && pass "$n agent(s) found" || warn "no agents (ok for non-dev tier)"
+  [ "$n" -gt 8 ] && warn "$n agents — consider agent teams beyond 8"
 else
-  warn "SESSION_STATE.md missing — create it so Claude can resume sessions after compaction"
+  warn ".claude/agents/ missing (ok for non-dev tier)"
 fi
 
-echo ""
-
-# ─── Make hooks executable ──────────────────────────────────────
-if [ -d ".claude/hooks" ]; then
-  chmod +x .claude/hooks/*.sh 2>/dev/null && echo -e "  ${GREEN}✓${NC} Made all hook scripts executable"
+# ─── Skills (KEY FIX: flag any skill dir without SKILL.md) ───────────────────
+hdr "Skills (.claude/skills/)"
+if [ -d .claude/skills ]; then
+  n=0
+  for d in .claude/skills/*/; do
+    [ -d "$d" ] || continue
+    name="$(basename "$d")"
+    if [ -f "$d/SKILL.md" ]; then
+      if grep -q "^name:" "$d/SKILL.md" && grep -q "^description:" "$d/SKILL.md"; then
+        n=$((n+1)); pass "skill $name — valid"
+      else
+        fail "skill $name — SKILL.md missing name/description frontmatter"
+      fi
+    else
+      fail "skill $name — no SKILL.md (this skill will NOT load)"
+    fi
+  done
+  [ "$n" -gt 0 ] || warn "no valid skills found"
+else
+  warn ".claude/skills/ missing"
 fi
 
-# ─── Summary ────────────────────────────────────────────────────
-echo ""
-echo -e "${BOLD}─────────────────────────────────${NC}"
-echo -e "  ${GREEN}✓${NC} Passed:   $PASS"
-echo -e "  ${YELLOW}⚠${NC} Warnings: $WARNINGS"
-echo -e "  ${RED}✗${NC} Errors:   $ERRORS"
-echo -e "${BOLD}─────────────────────────────────${NC}"
-echo ""
+# ─── Commands ────────────────────────────────────────────────────────────────
+hdr "Slash commands (.claude/commands/)"
+if [ -d .claude/commands ]; then
+  n=0
+  for f in .claude/commands/*.md; do
+    [ -e "$f" ] || continue
+    n=$((n+1)); name="/$(basename "$f" .md)"
+    grep -q "^description:" "$f" || warn "command $name — no description in frontmatter"
+  done
+  [ "$n" -gt 0 ] && pass "$n command(s) found" || warn "no slash commands found"
+else
+  warn ".claude/commands/ missing — /review, /test, /ship etc. won't exist"
+fi
+
+# ─── Hooks on disk ───────────────────────────────────────────────────────────
+hdr "Hooks (.claude/hooks/)"
+if [ -d .claude/hooks ]; then
+  for h in .claude/hooks/*.sh; do
+    [ -e "$h" ] || continue
+    bash -n "$h" 2>/dev/null && pass "$(basename "$h") — syntax ok" || fail "$(basename "$h") — bash syntax error"
+  done
+  chmod +x .claude/hooks/*.sh 2>/dev/null || true
+else
+  warn ".claude/hooks/ missing"
+fi
+
+# ─── Optional runtime files ──────────────────────────────────────────────────
+hdr "Runtime files"
+[ -f USER_PROFILE.json ] && pass "USER_PROFILE.json present" || warn "USER_PROFILE.json missing (optional; run /onboard for a tailored profile)"
+[ -f SESSION_STATE.md ] && pass "SESSION_STATE.md present" || warn "SESSION_STATE.md missing (created on first session/compaction)"
+
+# ─── Summary ─────────────────────────────────────────────────────────────────
+if [ "$JSON" -eq 1 ]; then
+  printf '{"pass":%d,"warnings":%d,"errors":%d}\n' "$PASS" "$WARNINGS" "$ERRORS"
+elif [ "$QUIET" -eq 0 ]; then
+  printf '\n%s─────────────────────────────%s\n' "$BOLD" "$NC"
+  printf '  %s✓%s pass %d   %s⚠%s warn %d   %s✗%s error %d\n' "$GREEN" "$NC" "$PASS" "$YELLOW" "$NC" "$WARNINGS" "$RED" "$NC" "$ERRORS"
+  printf '%s─────────────────────────────%s\n\n' "$BOLD" "$NC"
+fi
 
 if [ "$ERRORS" -gt 0 ]; then
-  echo -e "${RED}Setup has errors. Fix them before using Claude Code.${NC}"
+  [ "$QUIET" -eq 0 ] && printf '%sSetup has errors — fix the ✗ items above.%s\n' "$RED" "$NC"
   exit 1
-elif [ "$WARNINGS" -gt 0 ]; then
-  echo -e "${YELLOW}Setup is functional but has warnings.${NC}"
-  echo "You can proceed — warnings are non-blocking."
-  exit 0
-else
-  echo -e "${GREEN}${BOLD}Setup is valid and ready to use.${NC}"
-  echo ""
-  echo "Start Claude Code in your project: claude"
-  exit 0
 fi
+[ "$QUIET" -eq 0 ] && printf '%sSetup is valid.%s\n' "$GREEN" "$NC"
+exit 0
