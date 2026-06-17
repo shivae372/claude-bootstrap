@@ -53,6 +53,19 @@ persists and applies deterministically — offline, zero-dependency, validated b
 - Fixed the plugin `hooks/hooks.json` to use the required outer `"hooks"` wrapper, and plugin hook
   commands use `${CLAUDE_PLUGIN_ROOT}`.
 
+### Ecosystem — binds with `nodo`
+- claude-bootstrap and [nodo](https://github.com/shivae372/nodo) now form one ecosystem (see
+  [docs/ECOSYSTEM.md](docs/ECOSYSTEM.md)). nodo = the codebase map; bootstrap = the capability +
+  self-improvement layer.
+- **nodo → bootstrap:** `session-start.sh` injects `.nodo/nodo-context.md` (architecture map)
+  alongside the capability manifest and learnings — Claude starts every session knowing the
+  codebase, the tools, and the learnings as one context.
+- **bootstrap → nodo (transparency + diagnosis):** `doctor.py` reports nodo's status (installed?
+  map present/stale?) in findings and the capability manifest. The real-time gap hook routes
+  architecture / blast-radius questions to nodo and offers to install it when absent.
+- **One marketplace:** `.claude-plugin/marketplace.json` now lists both `claude-bootstrap` and
+  `nodo`, so `/plugin marketplace add shivae372/claude-bootstrap` offers the whole ecosystem.
+
 ### Known limitations (honest)
 - MCP servers can't be hot-registered into a *running* session — `.mcp.json`/`claude mcp add`
   take effect next session.
