@@ -2,7 +2,6 @@
 name: dep-check
 description: Dependency audit skill. Check for outdated packages and security vulnerabilities. Auto-activates on "check dependencies", "any vulnerable packages", "audit deps", "what's outdated", "npm audit". Routes to dep-checker sub-agent to keep main context clean.
 allowed-tools: Bash
-version: 1.0.0
 ---
 
 ## Purpose
