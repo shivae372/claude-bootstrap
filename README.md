@@ -10,14 +10,32 @@ coder or not — a professional, curated setup. Then it *keeps getting more powe
 when you ask for something it can't do yet, it searches the open ecosystem, installs the right
 skill, or **forges a new one** — mid-task. It heals its own config and remembers what it learns.
 
+### Install — pick one (30 seconds)
+
+**A · As a Claude Code plugin (recommended).** Type these inside Claude Code:
+
+```text
+/plugin marketplace add shivae372/claude-bootstrap
+/plugin install claude-bootstrap@claude-bootstrap
+/plugin install nodo@claude-bootstrap          # optional: the codebase-map sibling
+```
+
+> **Don't see `/plugin` (or get a "path does not exist" error)?** Your Claude Code is out of date —
+> run **`claude update`** (or reinstall the latest), then retry. The `/plugin` command ships in recent versions.
+
+**B · One-line installer (works on _any_ Claude Code version, no `/plugin` needed).** From your project folder:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shivae372/claude-bootstrap/master/install.sh | bash
 ```
 
-No LLM call to set up, no waiting, no questionnaire. The install is deterministic and instant;
-the *intelligence* lives in skills, hooks, and a bundled MCP server that run inside your session.
+Either way: no setup LLM call, no questionnaire — the install is instant. The *intelligence* lives in
+skills, hooks, and a bundled MCP server that run inside your session.
 
-**The one-liner:** _the last Claude Code setup you'll install — because it grows itself._
+> **Not a coder?** That's fine — run option B, then just talk to Claude normally. It sets everything up and
+> asks before doing anything irreversible. **Developer?** Everything's deterministic, tested, and documented below.
+
+**The last Claude Code setup you'll install — because it grows itself.**
 
 ---
 
@@ -67,9 +85,11 @@ deterministically — offline, validated before apply):
 Everything is pure-Python stdlib, offline-tolerant, and validated before anything is persisted.
 Run `python3 .claude/engine/doctor.py` anytime for a health report.
 
-## Install
+## Install options & flags
 
-**One-liner (recommended):**
+(Quick install is at the top. This section is the detail for the one-line installer.)
+
+**One-line installer:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shivae372/claude-bootstrap/master/install.sh | bash
 ```
