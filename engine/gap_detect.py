@@ -82,6 +82,18 @@ def detect_gaps(prompt, root):
     return out[:2]
 
 
+NODO_TRIGGERS = ["what calls", "what depends on", "blast radius", "what breaks if",
+                 "impact of changing", "map the codebase", "dependency graph",
+                 "architecture map", "architecture overview", "call graph", "where is", "trace"]
+
+
+def _nodo_present(root):
+    root = Path(root)
+    return ((root / ".nodo").is_dir()
+            or (root / ".claude" / "skills" / "nodo" / "SKILL.md").exists()
+            or (root / "nodo.py").exists())
+
+
 def failure_nudge(root, window=3600, threshold=3):
     fpath = Path(root) / ".claude" / "state" / "failures.jsonl"
     if not fpath.exists():
@@ -129,6 +141,17 @@ def main():
             f"Consider running the `augment` skill to find or forge one now: "
             f"`python3 .claude/engine/skill_finder.py \"{cap}\" --json` — vet, then install or forge."
         )
+    # Ecosystem: architecture / blast-radius questions are nodo's job.
+    p_low = prompt.lower()
+    if any(t in p_low for t in NODO_TRIGGERS) and not _already_nudged(root, "__nodo__"):
+        if _nodo_present(root):
+            notes.append("This looks like an architecture/impact question — the `nodo` map answers "
+                         "these precisely. Run `/nodo` (or read .nodo/nodo-context.json) before grepping.")
+        else:
+            notes.append("This is an architecture/blast-radius question. The `nodo` sibling answers these "
+                         "deterministically. Install it: `/plugin marketplace add shivae372/claude-bootstrap` "
+                         "→ `/plugin install nodo` (or clone shivae372/nodo), then `/nodo`.")
+
     if failure_nudge(root) and not _already_nudged(root, "__heal__"):
         notes.append("Several tool calls have failed recently. Consider running the "
                      "`doctor` skill (`python3 .claude/engine/doctor.py --apply`) to self-heal the setup.")
