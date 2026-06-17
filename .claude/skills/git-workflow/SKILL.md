@@ -2,7 +2,6 @@
 name: git-workflow
 description: Git workflow assistant. Invoke when the user wants to commit, create a branch, write a PR description, or follow the project's git conventions. Auto-activates on: "commit this", "create a PR", "write a commit message", "what should I name this branch".
 allowed-tools: Bash, Read
-version: 1.0.0
 ---
 
 ## Purpose
