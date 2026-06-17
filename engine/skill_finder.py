@@ -69,7 +69,7 @@ def from_anthropic_skills(keywords):
         out.append({
             "source": "anthropic/skills", "kind": "skill", "name": name,
             "url": f"https://github.com/anthropics/skills/tree/main/skills/{name}",
-            "install": f"/plugin marketplace add anthropics/skills  →  /plugin install {name}",
+            "install": f"add via /marketplace (enter anthropics/skills), then /plugin install {name}",
             "match": score, "trust": 100, "flags": ["official"],
         })
     return out
@@ -118,7 +118,7 @@ def from_github_repos(query, keywords):
         out.append({
             "source": "github", "kind": "repo", "name": it.get("full_name", ""),
             "url": it.get("html_url", ""), "stars": stars,
-            "install": f"/plugin marketplace add {it.get('full_name','')}",
+            "install": f"add via /marketplace (enter {it.get('full_name','')}), then /plugin install",
             "match": match, "trust": trust, "flags": flags,
         })
     return out
