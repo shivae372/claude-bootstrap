@@ -30,5 +30,11 @@
     "./.claude/commands/onboard.md"
   ],
   "hooks": "./.claude/hooks/hooks.json",
-  "mcpServers": "./.mcp.json"
+  "mcpServers": {
+    "forge": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/forge_server.py"]
+    }
+  }
 }
