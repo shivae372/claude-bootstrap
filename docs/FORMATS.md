@@ -160,7 +160,7 @@ Any important caveats, edge cases, or things Claude must NOT do.
 | `Stop` | When Claude finishes a task | Summary notification, cleanup |
 
 ### Hook Script Contract
-Hooks receive JSON on stdin:
+Hooks receive JSON on **stdin** (never positional args):
 ```json
 {
   "tool_name": "Bash",
@@ -169,9 +169,45 @@ Hooks receive JSON on stdin:
 }
 ```
 
-To **block** an action, exit with code `2` and print a reason to stdout.
-To **allow** an action, exit with code `0`.
-To **add context** (feedback to Claude), print JSON: `{"type": "feedback", "content": "..."}`
+- To **block** an action (PreToolUse): exit code `2` with the reason on **stderr** — Claude Code
+  surfaces stderr to the model on a blocking exit. (Printing to stdout is shown to the user, not fed back.)
+- To **allow**: exit `0`.
+- To **inject context** (e.g. SessionStart): exit `0` and print JSON with
+  `hookSpecificOutput.additionalContext`.
+
+**Write-path keys differ by tool** — extract content accordingly:
+| Tool | Where the written content lives |
+|---|---|
+| `Write` | `tool_input.content` |
+| `Edit` | `tool_input.new_string` |
+| `MultiEdit` | `tool_input.edits[].new_string` |
+
+**Event-specific payloads:** `PreCompact` carries `trigger` and `custom_instructions` — it does
+**not** include `tool_name`/`tool_input`, so never gate PreCompact logic on a tool name.
+
+---
+
+## Slash Command Format (`.claude/commands/NAME.md`)
+
+A command is a Markdown prompt with optional YAML frontmatter. Invoked as `/NAME [args]`.
+
+```markdown
+---
+description: One line shown in the command menu (required for discoverability).
+argument-hint: "[what to pass]"        # optional
+allowed-tools: Bash, Read              # optional — restrict tools for this command
+model: sonnet                          # optional
+---
+
+The prompt Claude runs when you type /NAME.
+Use $ARGUMENTS for everything after the command, or $1, $2 for positional args.
+```
+
+### Command Rules
+- File name = command name: `.claude/commands/review.md` → `/review`.
+- Keep the body an instruction to Claude, not prose for humans.
+- Commands compose skills/agents — e.g. `/review` should prefer the `code-review` skill if present.
+- `${ARGUMENTS:-default}` gives a sensible fallback when the user passes nothing.
 
 ---
 
