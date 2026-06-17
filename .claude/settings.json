@@ -2,50 +2,24 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
     "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/session-start.sh" }
-        ]
-      }
+      { "matcher": "", "hooks": [ { "type": "command", "command": "bash .claude/hooks/session-start.sh" } ] }
+    ],
+    "UserPromptSubmit": [
+      { "matcher": "", "hooks": [ { "type": "command", "command": "bash .claude/hooks/user-prompt-submit.sh" } ] }
     ],
     "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/safety-check.sh" }
-        ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/secret-detector.sh" }
-        ]
-      }
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "bash .claude/hooks/safety-check.sh" } ] },
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [ { "type": "command", "command": "bash .claude/hooks/secret-detector.sh" } ] }
     ],
     "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/format.sh" }
-        ]
-      }
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [ { "type": "command", "command": "bash .claude/hooks/format.sh" } ] },
+      { "matcher": "", "hooks": [ { "type": "command", "command": "bash .claude/hooks/capture-failure.sh" } ] }
     ],
     "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/checkpoint.sh" }
-        ]
-      }
+      { "matcher": "", "hooks": [ { "type": "command", "command": "bash .claude/hooks/checkpoint.sh" } ] }
     ],
     "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/notify.sh" }
-        ]
-      }
+      { "matcher": "", "hooks": [ { "type": "command", "command": "bash .claude/hooks/notify.sh" } ] }
     ]
   }
 }
