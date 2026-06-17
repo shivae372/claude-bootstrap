@@ -1,0 +1,19 @@
+{
+  "SessionStart": [
+    { "matcher": "", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-start.sh" } ] }
+  ],
+  "UserPromptSubmit": [
+    { "matcher": "", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/user-prompt-submit.sh" } ] }
+  ],
+  "PreToolUse": [
+    { "matcher": "Bash", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/safety-check.sh" } ] },
+    { "matcher": "Write|Edit|MultiEdit", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/secret-detector.sh" } ] }
+  ],
+  "PostToolUse": [
+    { "matcher": "Write|Edit|MultiEdit", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/format.sh" } ] },
+    { "matcher": "", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/capture-failure.sh" } ] }
+  ],
+  "PreCompact": [
+    { "matcher": "", "hooks": [ { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/checkpoint.sh" } ] }
+  ]
+}

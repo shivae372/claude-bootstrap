@@ -3,6 +3,49 @@
 All notable changes to claude-bootstrap are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); this project uses [SemVer](https://semver.org/).
 
+## [1.1.0] — 2026-06-17
+
+The **Forge living engine** — claude-bootstrap stops being a one-shot setup and becomes a
+self-healing, self-learning capability engine that grows itself in real time as you work.
+Modeled on `nodo`'s philosophy: the tool finds where it's blind, Claude reasons, the tool
+persists and applies deterministically — offline, zero-dependency, validated before apply.
+
+### Added — the engine (`.claude/engine/`, pure stdlib)
+- **`skill_finder.py`** — discovers skills/MCP across the open ecosystem (Anthropic skills,
+  GitHub topic+repo search, the MCP Registry, Smithery) with relevance ranking, trust scoring,
+  and graceful degradation. Proven live (finds the official Stripe MCP, postgres servers, the
+  official `pdf` skill, GitHub skill repos).
+- **`doctor.py`** — deterministic self-heal: health score + structured findings + safe
+  auto-fixes (`--apply`) + a capability manifest (`--manifest`).
+- **`learn.py`** — self-learning lessons store (validated, bounded, local) that the SessionStart
+  hook injects so every session starts smarter.
+- **`skill_forge.py`** — scaffolds + validates bespoke skills; the validator **rejects generic,
+  unfilled skeletons** so a forged skill is always detailed and specific.
+- **`gap_detect.py`** — the real-time trigger behind the UserPromptSubmit hook.
+
+### Added — Claude-facing layer
+- **Skills**: `augment` (discover → vet → install, else forge), `forge` (author a detailed
+  project-specific skill), `doctor` (self-heal), `learn` (remember).
+- **Real-time hooks**: `user-prompt-submit.sh` (notices a capability gap mid-task and nudges
+  Claude to `augment` then and there), `capture-failure.sh` (logs tool failures → heal nudge),
+  and an upgraded `session-start.sh` (injects SESSION_STATE + capability manifest + learnings).
+- **MCP server** `mcp/forge_server.py` (stdio JSON-RPC, pure stdlib) exposing `discover_skill`,
+  `capability_audit`, `heal_report`, `record_learning` — so Claude can augment/heal the setup
+  live, mid-session. Registered via `.mcp.json`.
+- **Plugin packaging** (`.claude-plugin/plugin.json` + `marketplace.json` + `hooks.json`) so the
+  whole thing installs via `/plugin marketplace add shivae372/claude-bootstrap` (experimental;
+  the installer remains the validated path).
+
+### Changed
+- `install.sh` (now v1.1.0) deploys the engine + MCP server into every project and registers the
+  new skills/hooks across all tiers.
+- Test suite grown to **64 checks** covering the engine, hooks, MCP handshake, and install e2e.
+
+### Known limitations (honest)
+- MCP servers can't be hot-registered into a *running* session — `.mcp.json`/`claude mcp add`
+  take effect next session.
+- The plugin manifest path isn't validated against live Claude Code yet; use the installer.
+
 ## [1.0.0] — 2026-06-17
 
 A ground-up reliability overhaul. The bootstrap moved from a fragile, LLM-driven generator to a

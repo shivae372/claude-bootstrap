@@ -1,0 +1,13 @@
+{
+  "name": "claude-bootstrap",
+  "owner": { "name": "shivae372", "url": "https://github.com/shivae372" },
+  "plugins": [
+    {
+      "name": "claude-bootstrap",
+      "source": "./",
+      "description": "Self-healing, self-learning Claude Code setup that augments itself in real time — discovers, installs, or forges the skills and MCP servers your project needs.",
+      "category": "productivity",
+      "tags": ["self-healing", "self-learning", "skills", "mcp", "automation", "onboarding"]
+    }
+  ]
+}

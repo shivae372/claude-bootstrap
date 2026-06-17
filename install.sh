@@ -21,7 +21,7 @@ set -euo pipefail
 REPO_OWNER="shivae372"
 REPO_NAME="claude-bootstrap"
 REPO_REF="master"
-BOOTSTRAP_VERSION="1.0.0"
+BOOTSTRAP_VERSION="1.1.0"
 
 # ─── Colors (auto-disable when not a TTY or NO_COLOR is set) ────────────────────
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
@@ -266,17 +266,17 @@ fi
 # ─── Component plan by tier ──────────────────────────────────────────────────────
 # Developer = everything. Hybrid = lighter. Non-dev = no agents, gentle skills.
 DEV_AGENTS=(explorer code-reviewer test-runner security-scanner dep-checker doc-writer)
-DEV_SKILLS=(analyze-repo code-review context-guard dep-check git-workflow security-scan test-runner self-update tips onboarding)
+DEV_SKILLS=(augment forge doctor learn analyze-repo code-review context-guard dep-check git-workflow security-scan test-runner self-update tips onboarding)
 DEV_COMMANDS=(bootstrap plan test review security deps ship checkpoint tips update onboard)
 
 HYB_AGENTS=(explorer code-reviewer test-runner)
-HYB_SKILLS=(analyze-repo code-review context-guard git-workflow test-runner tips onboarding self-update)
+HYB_SKILLS=(augment forge doctor learn analyze-repo code-review context-guard git-workflow test-runner tips onboarding self-update)
 HYB_COMMANDS=(bootstrap plan test review ship checkpoint tips update onboard)
 
-NON_SKILLS=(context-guard tips onboarding self-update)
+NON_SKILLS=(augment doctor learn context-guard tips onboarding self-update)
 NON_COMMANDS=(bootstrap plan tips update onboard checkpoint)
 
-ALL_HOOKS=(safety-check.sh secret-detector.sh format.sh checkpoint.sh session-start.sh notify.sh)
+ALL_HOOKS=(safety-check.sh secret-detector.sh format.sh checkpoint.sh session-start.sh user-prompt-submit.sh capture-failure.sh notify.sh)
 
 case "$TIER" in
   developer) AGENTS=("${DEV_AGENTS[@]}"); SKILLS=("${DEV_SKILLS[@]}"); COMMANDS=("${DEV_COMMANDS[@]}") ;;
@@ -332,6 +332,25 @@ if [ "$NO_HOOKS" -eq 0 ]; then
   copy_into "$SRC_DIR/.claude/settings.json" "$CLAUDE_DIR/settings.json"
   if [ "$DRY_RUN" -eq 0 ] && [ -d "$CLAUDE_DIR/hooks" ]; then
     chmod +x "$CLAUDE_DIR"/hooks/*.sh 2>/dev/null || true
+  fi
+fi
+
+# ─── Forge engine + MCP server (the self-healing / self-learning brain) ──────────
+# Copied into the project so skills, hooks, and the MCP server all resolve locally.
+if [ -d "$SRC_DIR/engine" ]; then
+  for f in "$SRC_DIR"/engine/*.py; do
+    [ -f "$f" ] && copy_into "$f" "$CLAUDE_DIR/engine/$(basename "$f")"
+  done
+fi
+if [ -d "$SRC_DIR/mcp" ]; then
+  for f in "$SRC_DIR"/mcp/*.py; do
+    [ -f "$f" ] && copy_into "$f" "$CLAUDE_DIR/mcp/$(basename "$f")"
+  done
+  # Register the Forge MCP server for this project (merge-safe: don't clobber an existing .mcp.json).
+  if [ -f "$SRC_DIR/.mcp.json" ] && [ ! -e "$TARGET_DIR/.mcp.json" ]; then
+    copy_into "$SRC_DIR/.mcp.json" "$TARGET_DIR/.mcp.json"
+  elif [ -e "$TARGET_DIR/.mcp.json" ] && [ "$DRY_RUN" -eq 0 ]; then
+    warn ".mcp.json already exists — add the 'forge' server manually (see .claude/mcp/forge_server.py)."
   fi
 fi
 
