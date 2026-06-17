@@ -2,7 +2,6 @@
 name: forge
 description: "Authors a NEW, project-specific Claude Code skill from scratch when the ecosystem has nothing that fits. Use after `augment` finds no good match, or when the user wants a custom workflow captured as a reusable skill. Produces a detailed, validated skill — never a generic stub. Triggers: 'make a skill for…', 'turn this into a skill', 'I keep doing X, automate it'."
 allowed-tools: Bash, Read, Write, Edit
-version: 1.0.0
 ---
 
 ## Purpose
