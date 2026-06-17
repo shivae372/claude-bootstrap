@@ -136,7 +136,7 @@ def query(root, q, keywords=None):
                 for it in (data.get("items", []) if isinstance(data, dict) else []):
                     out.append({"source": f"learned:{s['name']}", "kind": "repo",
                                 "name": it.get("full_name", ""), "url": it.get("html_url", ""),
-                                "install": f"/plugin marketplace add {it.get('full_name','')}",
+                                "install": f"add via /marketplace (enter {it.get('full_name','')}), then /plugin install",
                                 "match": 3, "trust": 75, "flags": ["learned", f"{it.get('stargazers_count',0)}★"]})
             elif kind == "http_json":
                 url = s["url"].replace("{query}", urllib.parse.quote(q))
