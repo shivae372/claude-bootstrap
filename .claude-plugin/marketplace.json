@@ -14,7 +14,7 @@
     },
     {
       "name": "nodo",
-      "source": { "source": "github", "repo": "shivae372/nodo" },
+      "source": { "source": "url", "url": "https://github.com/shivae372/nodo.git" },
       "description": "Map any codebase: deterministic dependency + symbol + call graph, issue detection, and AI-agent context. The architecture layer of the ecosystem — claude-bootstrap reads its map at session start.",
       "category": "developer-tools",
       "tags": ["codebase-map", "architecture", "dependency-graph", "code-quality", "ai-context"]
