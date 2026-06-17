@@ -25,7 +25,6 @@ SKELETON = """---
 name: {name}
 description: {description}
 allowed-tools: {tools}
-version: 0.1.0
 ---
 
 ## Purpose
