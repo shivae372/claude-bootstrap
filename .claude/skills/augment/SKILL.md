@@ -80,3 +80,11 @@ validated, plus a one-line summary of what was added and how to invoke it.
   inspecting it. Surface trust flags honestly.
 - If discovery returns nothing and the domain is unfamiliar, ask the user one
   clarifying question rather than forging something generic.
+
+## Ecosystem note — codebase understanding → nodo
+If the capability the user needs is *understanding the codebase itself* — architecture,
+blast radius, "what calls X", dependency/call graph, where a concept lives — that's the
+**nodo** sibling, not a web skill. If nodo is installed (`.nodo/` or the `/nodo` skill exists),
+use `/nodo` and read `.nodo/nodo-context.json`. If not, offer to install it from the same
+marketplace: `/plugin marketplace add shivae372/claude-bootstrap` → `/plugin install nodo`
+(or clone `shivae372/nodo`). claude-bootstrap reads nodo's map automatically at session start.
