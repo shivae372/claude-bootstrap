@@ -29,6 +29,10 @@ try: print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])
 except Exception: pass' 2>/dev/null || true)"
   [ -n "$LRN" ] && PARTS+="$LRN"$'\n'
 fi
+# 4. Codebase map (the nodo sibling) — architecture context, if present.
+if [ -f ".nodo/nodo-context.md" ]; then
+  PARTS+="## Codebase map (nodo)"$'\n'"Architecture, hubs, and known issues for this repo — use it before grepping:"$'\n'"$(head -c 6000 .nodo/nodo-context.md 2>/dev/null)"$'\n'
+fi
 
 [ -z "$PARTS" ] && exit 0
 

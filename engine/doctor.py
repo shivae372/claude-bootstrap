@@ -141,6 +141,19 @@ def diagnose(root="."):
         add("info", "CLAUDE.md", "No project CLAUDE.md — Claude lacks persistent project context.",
             "Run `/bootstrap` to generate one.")
 
+    # ── Ecosystem: nodo (the codebase-map sibling) transparency ──────────────
+    ns = nodo_status(root)
+    if ns["present"]:
+        if not ns["map_present"]:
+            add("info", "nodo", "nodo is available but no architecture map exists yet.",
+                "Run `/nodo` (or `python nodo.py .`) to generate .nodo/nodo-context.* — then Claude reads it on session start.")
+        elif ns["stale"]:
+            add("info", "nodo", "nodo's architecture map looks stale (older than recent source changes).",
+                "Re-run `/nodo` to refresh .nodo/nodo-context.*; run `nodo … --self-check` for nodo's own diagnosis.")
+    elif ns["has_code"]:
+        add("info", "nodo", "No codebase map. The nodo sibling gives Claude an architecture map + blast-radius answers.",
+            "Install it: `/plugin marketplace add shivae372/claude-bootstrap` → `/plugin install nodo`, or clone shivae372/nodo.")
+
     return _finalize(findings, auto, root)
 
 
@@ -164,8 +177,39 @@ def apply_fixes(report):
     return fixed
 
 
+def nodo_status(root="."):
+    """Transparency for the nodo sibling: is it available, is its map present/fresh?
+    nodo is optional — everything here is informational, never an error."""
+    root = Path(root)
+    present = ((root / ".nodo").is_dir()
+               or (root / ".claude" / "skills" / "nodo" / "SKILL.md").exists()
+               or (root / "nodo.py").exists())
+    code_markers = ["package.json", "pyproject.toml", "go.mod", "Cargo.toml",
+                    "Gemfile", "pom.xml", "requirements.txt"]
+    has_code = any((root / m).exists() for m in code_markers)
+    ctx = root / ".nodo" / "nodo-context.md"
+    map_present = ctx.exists()
+    stale = False
+    if map_present:
+        try:
+            mtime = ctx.stat().st_mtime
+            newest = 0.0
+            for p in root.rglob("*"):
+                parts = set(p.parts)
+                if parts & {".nodo", ".git", "node_modules", ".claude", "__pycache__"}:
+                    continue
+                if p.is_file():
+                    newest = max(newest, p.stat().st_mtime)
+            stale = newest > mtime + 1
+        except Exception:
+            stale = False
+    return {"present": present, "has_code": has_code,
+            "map_present": map_present, "stale": stale}
+
+
 def capability_manifest(root="."):
     cl = Path(root) / ".claude"
+    ns = nodo_status(root)
     def names(sub, pat, dirs=False):
         d = cl / sub
         if not d.is_dir():
@@ -173,11 +217,15 @@ def capability_manifest(root="."):
         if dirs:
             return sorted(p.name for p in d.iterdir() if p.is_dir())
         return sorted(p.stem for p in d.glob(pat))
+    nodo = "not installed" if not ns["present"] else (
+        "installed, no map yet" if not ns["map_present"] else
+        ("installed, map stale" if ns["stale"] else "installed, map fresh"))
     return {
         "skills": names("skills", "*", dirs=True),
         "commands": names("commands", "*.md"),
         "agents": names("agents", "*.md"),
         "hooks": names("hooks", "*.sh"),
+        "nodo": nodo,
     }
 
 

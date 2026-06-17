@@ -157,6 +157,17 @@ install.sh
 | A hook blocked something legitimate | One-off bypass: `CLAUDE_BOOTSTRAP_ALLOW_DANGEROUS=1` (safety) or `CLAUDE_BOOTSTRAP_ALLOW_SECRETS=1` (secrets). |
 | Want to undo everything | `bash install.sh --uninstall` (backs up to `.claude.backup.<ts>`). |
 
+## Ecosystem — pairs with [nodo](https://github.com/shivae372/nodo)
+
+claude-bootstrap is the *capability* layer; **nodo** is the *codebase-map* layer. They bind:
+bootstrap reads nodo's architecture map at session start, reports nodo's health in `/doctor`, and
+offers to install nodo the moment you ask an architecture or blast-radius question. One marketplace
+ships both. See [docs/ECOSYSTEM.md](docs/ECOSYSTEM.md).
+
+```bash
+/plugin marketplace add shivae372/claude-bootstrap   # offers BOTH claude-bootstrap and nodo
+```
+
 ## Contributing
 
 PRs welcome — new stacks, agents, and hooks especially. Run `bash tests/run.sh` before

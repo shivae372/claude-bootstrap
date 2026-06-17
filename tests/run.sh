@@ -175,6 +175,22 @@ for e in skill_finder doctor learn skill_forge gap_detect sources; do
 done
 [ "$ENG_OK" -eq 1 ] && ok "all engine scripts present" || no "an engine script is missing"
 
+# ─── 10. Ecosystem binding (nodo + claude-bootstrap) ─────────────────────────
+section "10. Ecosystem (nodo binding)"
+# 10a. The marketplace offers BOTH plugins.
+python3 -c "import json,sys; p=[x['name'] for x in json.load(open('.claude-plugin/marketplace.json'))['plugins']]; sys.exit(0 if ('claude-bootstrap' in p and 'nodo' in p) else 1)" 2>/dev/null && ok "marketplace lists both claude-bootstrap and nodo" || no "marketplace missing a plugin"
+# 10b. doctor surfaces nodo status (transparency).
+python3 engine/doctor.py --manifest --json 2>/dev/null | grep -q '"nodo"' && ok "doctor manifest reports nodo status" || no "doctor manifest missing nodo"
+# 10c. gap hook routes architecture questions to nodo + offers install when absent.
+ECO="$(mktemp -d)"; mkdir -p "$ECO/.claude"; echo '{}' > "$ECO/package.json"
+echo "{\"prompt\":\"what breaks if I change the auth module\",\"cwd\":\"$ECO\"}" | python3 engine/gap_detect.py | grep -q "nodo" && ok "gap hook routes architecture Qs to nodo" || no "gap hook misses architecture Qs"
+# 10d. session-start ingests nodo's map when present.
+ECO2="$(mktemp -d)"; mkdir -p "$ECO2/.nodo"; echo '# map' > "$ECO2/.nodo/nodo-context.md"
+( cd "$ECO2" && echo '{"hook_event_name":"SessionStart"}' | bash "$ROOT/.claude/hooks/session-start.sh" 2>/dev/null ) | grep -q "Codebase map (nodo)" && ok "session-start ingests nodo map" || no "session-start misses nodo map"
+# 10e. ecosystem doc present.
+[ -f docs/ECOSYSTEM.md ] && ok "docs/ECOSYSTEM.md present" || no "ecosystem doc missing"
+rm -rf "$ECO" "$ECO2" 2>/dev/null || true
+
 # ─── Summary ─────────────────────────────────────────────────────────────────
 printf '\n\033[1m─────────────────────────────\033[0m\n'
 printf '  Passed: %d   Failed: %d\n' "$PASS" "$FAIL"

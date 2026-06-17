@@ -1,6 +1,9 @@
 {
   "name": "claude-bootstrap",
   "owner": { "name": "shivae372", "url": "https://github.com/shivae372" },
+  "metadata": {
+    "description": "The claude-bootstrap ecosystem: a self-growing Claude Code setup engine, plus nodo for codebase mapping. They bind together — bootstrap consumes nodo's architecture map and can install it on demand."
+  },
   "plugins": [
     {
       "name": "claude-bootstrap",
@@ -8,6 +11,13 @@
       "description": "Self-healing, self-learning Claude Code setup that augments itself in real time — discovers, installs, or forges the skills and MCP servers your project needs.",
       "category": "productivity",
       "tags": ["self-healing", "self-learning", "skills", "mcp", "automation", "onboarding"]
+    },
+    {
+      "name": "nodo",
+      "source": { "source": "github", "repo": "shivae372/nodo" },
+      "description": "Map any codebase: deterministic dependency + symbol + call graph, issue detection, and AI-agent context. The architecture layer of the ecosystem — claude-bootstrap reads its map at session start.",
+      "category": "developer-tools",
+      "tags": ["codebase-map", "architecture", "dependency-graph", "code-quality", "ai-context"]
     }
   ]
 }
