@@ -1,0 +1,50 @@
+# ──────────────────────────────────────────────────────────────────────────
+# CI workflow for claude-bootstrap.
+# To ACTIVATE: move this file to .github/workflows/ci.yml in the repo root.
+#   mkdir -p .github/workflows && git mv docs/ci.workflow.yml .github/workflows/ci.yml
+# (It lives here because the automation that opened the PR lacked GitHub 'workflows'
+#  permission, which is required to commit under .github/workflows/.)
+# ──────────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install shellcheck (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Install shellcheck (macOS)
+        if: runner.os == 'macOS'
+        run: brew install shellcheck
+
+      - name: Run test suite
+        run: bash tests/run.sh
+
+      - name: Smoke-test the installer end-to-end
+        run: |
+          mkdir -p /tmp/ci-fixture
+          echo '{"dependencies":{"next":"14"}}' > /tmp/ci-fixture/package.json
+          echo lock > /tmp/ci-fixture/pnpm-lock.yaml
+          bash install.sh --dir /tmp/ci-fixture --tier developer --yes
+          bash scripts/validate.sh
+        working-directory: ${{ github.workspace }}
