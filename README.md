@@ -41,6 +41,29 @@ and it often half-works. claude-bootstrap inverts that:
 | **Hooks** (`.claude/hooks/`) | Shell guardrails: block destructive commands, stop real secrets from being written, auto-format on save, checkpoint before compaction, resume on session start. |
 | **`SESSION_STATE.md`** | Working memory. The SessionStart hook feeds it back so Claude resumes without re-explaining. |
 
+## The living engine (self-healing · self-learning · self-extending)
+
+The setup doesn't just get installed — it **grows itself as you work**. Modeled on the
+`nodo` philosophy (the tool finds where it's blind, Claude reasons, the tool persists
+deterministically — offline, validated before apply):
+
+- **Augments in real time.** Ask for something the project can't do yet ("add Stripe
+  checkout", "deploy to Fly.io") and a `UserPromptSubmit` hook notices the gap and nudges
+  Claude to run **`augment`** — which searches the open ecosystem (Anthropic skills, GitHub,
+  the MCP Registry, Smithery), vets candidates, and installs the best one. *Then and there.*
+- **Forges what doesn't exist.** If nothing fits, **`forge`** authors a detailed,
+  project-specific skill — and a validator rejects generic, unfilled stubs.
+- **Heals itself.** **`doctor`** scans `.claude/` for broken skills/hooks/config, scores
+  health, and applies safe fixes. Repeated tool failures trigger a heal nudge automatically.
+- **Learns and remembers.** **`learn`** captures durable facts ("we use pnpm", "deploy via
+  Fly") into a validated store that the `SessionStart` hook feeds back every session — so the
+  project keeps its memory across sessions and compactions.
+- **Works live via MCP.** A bundled stdio MCP server (`forge`) exposes `discover_skill`,
+  `capability_audit`, `heal_report`, and `record_learning` as tools Claude can call mid-task.
+
+Everything is pure-Python stdlib, offline-tolerant, and validated before anything is persisted.
+Run `python3 .claude/engine/doctor.py` anytime for a health report.
+
 ## Install
 
 **One-liner (recommended):**
