@@ -2,7 +2,6 @@
 name: learn
 description: "Makes the setup remember. Captures durable, project-specific learnings — user preferences, stack facts, conventions, fixes, recurring gaps — so every future session starts smarter (they're injected at SessionStart). Use when you discover something about how THIS project or user works that should persist. Triggers: 'remember that…', 'from now on…', 'we always/never…', or right after you learn a non-obvious project fact."
 allowed-tools: Bash, Read
-version: 1.0.0
 ---
 
 ## Purpose
